@@ -140,7 +140,7 @@ def verificaHamming(valoresConvertidos): #Verifica se uma lista de vários biná
                 x += 3
             else:
                 x+= 1
-        if (x % 2 == 1):
+        if (um % 2 == 1):
             return 1
         else:
             return 0
@@ -155,7 +155,7 @@ def verificaHamming(valoresConvertidos): #Verifica se uma lista de vários biná
                 x = 12
             else: 
                 x += 1
-        if (x % 2 == 1):
+        if (um % 2 == 1):
             return 1
         else:
             return 0
@@ -167,7 +167,7 @@ def verificaHamming(valoresConvertidos): #Verifica se uma lista de vários biná
             if (binario[x] == "1"):
                 um += 1
             x+= 1
-        if (x % 2 == 1):
+        if (um % 2 == 1):
             return 1
         else:
             return 0
@@ -176,17 +176,17 @@ def verificaHamming(valoresConvertidos): #Verifica se uma lista de vários biná
     a = False
     for binario in binarios:
         verificacao = ""
-        verificacao += str(verificaQ4(binario))
-        verificacao += str(verificaQ3(binario))
-        verificacao += str(verificaQ2(binario))
         verificacao += str(verificaQ1(binario))
+        verificacao += str(verificaQ2(binario))
+        verificacao += str(verificaQ3(binario))
+        verificacao += str(verificaQ4(binario))
         if (verificacao != "0000"):
             total = 0
             i = 0
             while (i < 4):
                 total += int(verificacao[i]) * (2 ** (4 - i -1))
                 i += 1
-            if (verificacao[0] == "0"):
+            if (binario[0] == "0"):
                 print("Mais de um erro entre as posições %.1d e %.1d" % (binarios.index(binario) * 16, binarios.index(binario) * 16 + 16))
             else:
                 print("Erro na posição", total + (binarios.index(binario) * 16))
