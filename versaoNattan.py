@@ -1,5 +1,6 @@
-def converterEmHamming(binario): #Retorna uma string binaria convertida com o algoritmo de hamming (input: string binaria)
-    print("Binário informado:", binario)
+import time
+
+def converterEmHamming(binario): #Retorna uma string binaria convertida com o algoritmo de hamming (input: string binaria)\
     qtdBits = len(binario)
 
     if (qtdBits % 11 != 0): #transforma o código número em múltiplo de 11
@@ -114,7 +115,7 @@ def converterEmHamming(binario): #Retorna uma string binaria convertida com o al
 
     return (conjuntos)
 
-def verificaHamming(valoresConvertidos):
+def verificaHamming(valoresConvertidos): #Verifica se uma lista de vários binários com hamming possui erros
     binarios = valoresConvertidos
 
     def verificaQ1(binario):
@@ -172,6 +173,7 @@ def verificaHamming(valoresConvertidos):
             return 0
 
     verificacao = ""
+    a = False
     for binario in binarios:
         verificacao = ""
         verificacao += str(verificaQ4(binario))
@@ -184,29 +186,70 @@ def verificaHamming(valoresConvertidos):
             while (i < 4):
                 total += int(verificacao[i]) * (2 ** (4 - i -1))
                 i += 1
-            if (binario[0] == "0"):
-                print("Mais de um erro entre as posições", ((binarios.index(binario) + 1) * 16), " e ", ((binarios.index(binario) + 1) * 16) + 16)
+            if (verificacao[0] == "0"):
+                print("Mais de um erro entre as posições %.1d e %.1d" % (binarios.index(binario) * 16, binarios.index(binario) * 16 + 16))
             else:
-                print("Erro na posição", total * ((binarios.index(binario) + 1) * 16))
+                print("Erro na posição", total + (binarios.index(binario) * 16))
+        else:
+            a = True
+    if (a):
+        print("Nenhum erro encontrado")
 
-valoresConvertidos = converterEmHamming("010011100110000101110100011101000110000101101110")
-comHamming = ""
-for valor in valoresConvertidos:
-    comHamming += valor
-print("Binário com Hamming aplicado:",comHamming)
-print()
+def mostraMenuPrincipal(): #Mostra a tela principal
+    print("\n" * 130)
+    print("Bem vindo ao conversor para Hamming")
+    print()
+    print("1 - Adequar um binário em Hamming (31.25% de paridade)")
+    print("2 - Verificar se um binário (31.25% de paridade) com Hamming possui erros")
+    print()
+    print("Enter para sair")
 
-for valor in valoresConvertidos:
-    print(valor)
-
-maximo = len(valoresConvertidos) -1
-
-while True:
-    bloco = input("Informe o bloco que deseja alterar (0 a %.0d): " % maximo)
-
-    if (bloco == ""):
+while True: #Trata as opções escolhidas no menu
+    mostraMenuPrincipal()
+    entrada = input("Com qual opção deseja prosseguir? ")
+    if (entrada == ""):
         break
-
-    bloco = int(bloco)
-
-verificaHamming(valoresConvertidos)
+    if (entrada == "1"):
+        binario = "1"
+        print("\n" * 130)
+        if (binario == ""):
+            continue      
+        while True:
+            binario = input("Informe o binário (Enter para voltar): ")
+            if (binario == ""):
+                break
+            if ((binario.count("1") + binario.count("0")) != len(binario)):
+                print("Binário inválido")
+                time.sleep(1.5)
+                break
+            valoresConvertidos = converterEmHamming(binario)
+            comHamming = ""
+            for valor in valoresConvertidos:
+                comHamming += valor
+            print("Binário com Hamming aplicado:",comHamming)
+            print()
+    if (entrada == "2"):
+        binario = "1"
+        print("\n" * 130)
+        if (binario == ""):
+            continue
+        while True:
+            binario = input("Informe o binário (Enter para voltar): ")
+            if (binario == ""):
+                break
+            if (len(binario) % 16 != 0):
+                print("Binário inválido")
+                time.sleep(1.5)
+                break
+            if ((binario.count("1") + binario.count("0")) != len(binario)):
+                print("Binário inválido")
+                time.sleep(1.5)
+                break
+            lista = []
+            y = 0
+            while True:
+                if (y + 16 > len(binario)):
+                    break
+                lista.append(binario[y:y+16])
+                y += 16
+            verificaHamming(lista)
