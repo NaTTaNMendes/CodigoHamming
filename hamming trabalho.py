@@ -1,37 +1,5 @@
 import time
 
-def converterBaseParaInteiro(numero, base):
-    """
-    Converte um numero em qualquer base entre 2 e 16 positivo para decimal. Retorna o inteiro convertido
-    numero = string
-    base = int
-    """
-    numero = numero.upper()
-    tamanho = len(numero)
-    total = 0
-
-    i = 0
-    while (i < tamanho):
-        if (numero[i] == "A"):
-            algarismo = 10
-        elif (numero[i] == "B"):
-            algarismo = 11
-        elif (numero[i] == "C"):
-            algarismo = 12
-        elif (numero[i] == "D"):
-            algarismo = 13
-        elif (numero[i] == "E"):
-            algarismo = 14
-        elif (numero[i] == "F"):
-            algarismo = 15
-        else:
-            algarismo = int(numero[i])
-
-        total += algarismo * (base ** (tamanho - i -1))
-        i += 1
-    
-    return total
-
 def main():
     alternatives = ['A', 'B', 'C', 'D']
     while True:                                                                                     
