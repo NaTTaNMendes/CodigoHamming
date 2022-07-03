@@ -135,7 +135,6 @@ def main():
                 caminho = input('Informe o caminho do arquivo binário a ser codificado: ')                                   
                 arquivo = open(caminho, 'r').read()                                          
                 arquivo = str(arquivo)
-                print(arquivo)
                 break
             except:
                 mensagemErro('Arquivo não encontrado')
@@ -189,6 +188,35 @@ def main():
             except:
                 mensagemErro('Arquivo não encontrado')           
     
-   ## if (choice == 'D'):             
+    if (choice == 'D'):
+        while True:
+            try:
+                caminho = input('Informe o caminho do arquivo binário a ser decodificado: ')                                   
+                arquivo = open(caminho, 'r').read()                                          
+                arquivo = str(arquivo)
+                break
+            except:
+                mensagemErro('Arquivo não encontrado')
+                
+        bytes = []                                                                                  #Separa todos os bits em blocos de 16 para a verificação
+        Doisbytes = ''
+        for numero in arquivo:
+            if (len(Doisbytes) == 16):
+                bytes.append(Doisbytes)
+                Doisbytes = ''
+            else:                
+                Doisbytes = Doisbytes + numero
+        
+        for index, byte in enumerate(bytes):
+            posUm = []
+            for posicao, numero in enumerate(byte):
+                if (numero == '1'):
+                    posUm.append(posicao)
+            if (len(posUm) != 0):
+                
+            
+                    
+                
+                           
 if __name__=='__main__':
     main()
