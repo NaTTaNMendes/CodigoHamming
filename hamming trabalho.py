@@ -1,4 +1,3 @@
-from itertools import count
 import time
 
 def mensagemErro(mensagem): #Informa uma mensagem de erro personalizada
@@ -6,7 +5,7 @@ def mensagemErro(mensagem): #Informa uma mensagem de erro personalizada
     time.sleep(1.5)
     print('\n'*130)
 
-def criarQ1(binario): #Cria o bit necessário para as colunas 2 e 4
+def criarQ1(binario): #Cria o bit necessário para as colunas 2 e 4  
     y = 1
     um = 0
     while (y < 16):
@@ -156,7 +155,7 @@ def main():
                 saida = "0" + saida                                                             
                 x += 1
             arquivo = saida + arquivo
-            
+        
         inicio = 0
         fim = 11
         conjuntos = []                                                          #Cria as divisões em grupos de 11 bits e adiciona um 'X' onde deve ser adicionado um bit de paridade
@@ -179,11 +178,6 @@ def main():
             saida = "".join(lista)
             conjuntos[index] = saida
         saida = ''.join(conjuntos)
-        metadado = '000'
-        for i in range(qtdZeros):
-            metadado = '1' + metadado
-        
-        saida = metadado + saida
 
         while True:
             try:
@@ -204,20 +198,6 @@ def main():
                 break
             except:
                 mensagemErro('Arquivo não encontrado')
-
-        entrada = ''
-        qtdZero = 0
-        fimMeta = 0
-        for index, bit in enumerate(arquivo):                                                       #Remove os metadados sobre a quantidade de 0s
-            if (bit == '0'):
-                qtdZero = qtdZero + 1
-            if (qtdZero == 3):
-                fimMeta = index
-                entrada = arquivo[0:fimMeta]
-                arquivo = arquivo[fimMeta:]
-                break
-        
-        qtdZero = entrada.count('1')
 
         blocos = []                                                                                  #Separa todos os bits em blocos de 16 para a verificação
         bloco = ''
@@ -292,11 +272,9 @@ def main():
                 bloco[4] = ''
                 bloco[8] = ''
                 saida = saida + ''.join(bloco)
-                saida = saida[qtdZero:]
-        #    saida = ''
-        #    for bloco in decodificados:
-        #        saida += bloco
-
+            
+            saida = saida[saida.index('1'):]
+                
             while True:
                 try:
                     caminho = input('Informe o caminho do .txt onde deseja guardar o binário decodificado: ')
