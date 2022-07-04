@@ -1,3 +1,4 @@
+from itertools import count
 import time
 
 def mensagemErro(mensagem): #Informa uma mensagem de erro personalizada
@@ -5,7 +6,7 @@ def mensagemErro(mensagem): #Informa uma mensagem de erro personalizada
     time.sleep(1.5)
     print('\n'*130)
 
-def criarQ1(binario): #verifica o bit necessário para as colunas 2 e 4
+def criarQ1(binario): #Cria o bit necessário para as colunas 2 e 4
     y = 1
     um = 0
     while (y < 16):
@@ -18,7 +19,7 @@ def criarQ1(binario): #verifica o bit necessário para as colunas 2 e 4
     else:
         return 0
 
-def criarQ2(binario): #verifica o bit necessário para as colunas 3 e 4
+def criarQ2(binario): #Cria o bit necessário para as colunas 3 e 4
     y = 2
     um = 0
     while (y < 16): 
@@ -34,7 +35,7 @@ def criarQ2(binario): #verifica o bit necessário para as colunas 3 e 4
     else:
         return 0
 
-def criarQ3(binario): #verifica o bit necessário para as linhas 2 e 4
+def criarQ3(binario): #Cria o bit necessário para as linhas 2 e 4
     y = 4
     um = 0
     while (y < 16):
@@ -50,7 +51,7 @@ def criarQ3(binario): #verifica o bit necessário para as linhas 2 e 4
     else:
         return 0
 
-def criarQ4(binario): #verifica o bit necessário para as linhas 3 e 4
+def criarQ4(binario): #Cria o bit necessário para as linhas 3 e 4
     y = 8
     um = 0
     while (y < 16):
@@ -63,7 +64,7 @@ def criarQ4(binario): #verifica o bit necessário para as linhas 3 e 4
     else:
         return 0
 
-def criarQ0(binario): #verifica o bit necessário para todas as linhas
+def criarQ0(binario): #Cria o bit necessário para todas as linhas
     y = 1
     um = 0
     while (y < 16): 
@@ -130,6 +131,7 @@ def main():
         print('String convertida em binário:', saida)
 
     if (choice == 'C'):
+        qtdZeros = 0
         while True:
             try:
                 caminho = input('Informe o caminho do arquivo binário a ser codificado: ')                                   
@@ -145,11 +147,11 @@ def main():
                 if (x > len(arquivo)):                                                               
                     break                                                                       
                 x += 11                                                                         
-            zeros = x - len(arquivo)                                                                                                                                                         
+            qtdZeros = x - len(arquivo)                                                                                                                                                         
             x = 0                                                                               
             saida = ""                                                                          
             while True:                                                         #adiciona os 0 para que o binário se torne multiplo de 11               
-                if (x == zeros):                                                                
+                if (x == qtdZeros):                                                                
                     break                                                                       
                 saida = "0" + saida                                                             
                 x += 1
@@ -177,7 +179,12 @@ def main():
             saida = "".join(lista)
             conjuntos[index] = saida
         saida = ''.join(conjuntos)
+        metadado = '000'
+        for i in range(qtdZeros):
+            metadado = '1' + metadado
         
+        saida = metadado + saida
+
         while True:
             try:
                 caminho = input('Informe o caminho do .txt onde deseja guardar os binários: ')
@@ -191,32 +198,114 @@ def main():
     if (choice == 'D'):
         while True:
             try:
-                caminho = input('Informe o caminho do arquivo binário a ser decodificado: ')                                   
-                arquivo = open(caminho, 'r').read()                                          
+                caminho = input('Informe o caminho do arquivo binário a ser decodificado: ')
+                arquivo = open(caminho, 'r').read()
                 arquivo = str(arquivo)
                 break
             except:
                 mensagemErro('Arquivo não encontrado')
-                
-        bytes = []                                                                                  #Separa todos os bits em blocos de 16 para a verificação
-        Doisbytes = ''
-        for numero in arquivo:
-            if (len(Doisbytes) == 16):
-                bytes.append(Doisbytes)
-                Doisbytes = ''
-            else:                
-                Doisbytes = Doisbytes + numero
+
+        entrada = ''
+        qtdZero = 0
+        fimMeta = 0
+        for index, bit in enumerate(arquivo):                                                       #Remove os metadados sobre a quantidade de 0s
+            if (bit == '0'):
+                qtdZero = qtdZero + 1
+            if (qtdZero == 3):
+                fimMeta = index
+                entrada = arquivo[0:fimMeta]
+                arquivo = arquivo[fimMeta:]
+                break
         
-        for index, byte in enumerate(bytes):
+        qtdZero = entrada.count('1')
+
+        blocos = []                                                                                  #Separa todos os bits em blocos de 16 para a verificação
+        bloco = ''
+        for bit in arquivo:
+            bloco = bloco + bit
+            if (len(bloco) == 16):
+                blocos.append(bloco)
+                bloco = ''
+        
+        decodificados = []
+        podeRetornar = True
+        for index, bloco in enumerate(blocos):                                                       #Verifica todos os bits do arquivo
             posUm = []
-            for posicao, numero in enumerate(byte):
+            qtdUm = 0
+
+            for posicao, numero in enumerate(bloco):                                                 #Coleta a posição dos números '1' no bloco de bits
                 if (numero == '1'):
                     posUm.append(posicao)
-            if (len(posUm) != 0):
-                
+                if (numero == '1' and posicao > 0):
+                    qtdUm += 1
             
-                    
+            checkQ0 = True
+            if (qtdUm % 2 == 0):
+                if (bloco[0] == '1'):
+                    checkQ0 = False
+            else:
+                if (bloco[0] == '0'):
+                    checkQ0 = False
+
+            xor = 0
+            if (len(posUm) != 0):
+                for item in posUm:
+                    xor = xor^item                                                                  #Realiza o XOR entre os números encontrados
                 
-                           
+                if (xor != 0) and (checkQ0 == False):
+                    a = ""
+                    for i in range(0, len(bloco)):
+                        if i == xor:
+                            if bloco[i] == "1":
+                                a += "0"
+                            else:
+                                a += "1"
+                        else:
+                            a += bloco[i]
+                    bloco = a
+
+                    print('ERRO ENCONTRADO NO BLOCO %.0d E NA POSIÇÃO %.0d CORRIGIDO!' % (index, xor))
+                elif (xor != 0) and (checkQ0 == True):
+                    print('MAIS DE DOIS ERROS ENCONTRADOS NO BLOCO %.0d' % (index))
+                    podeRetornar = False 
+                                   
+                elif (xor == 0) and checkQ0:
+                    print('NENHUM ERRO ENCONTRADO NO BLOCO %.0d' % (index))
+                else:
+                    if (bloco[0] == '0'):
+                        bloco = bloco[1:]
+                        bloco = '1' + bloco
+                    else:
+                        bloco = bloco[1:]
+                        bloco = '0' + bloco
+                    print('ERRO ENCONTRADO NO BLOCO %.0d E NA POSIÇÃO 0 CORRIGIDO!' % (index))
+                                                    
+            decodificados.append(bloco)
+
+        saida = ''
+        if (podeRetornar):
+            for bloco in decodificados:
+                bloco = list(bloco)
+                bloco[0] = ''
+                bloco[1] = ''
+                bloco[2] = ''
+                bloco[4] = ''
+                bloco[8] = ''
+                saida = saida + ''.join(bloco)
+                saida = saida[qtdZero:]
+        #    saida = ''
+        #    for bloco in decodificados:
+        #        saida += bloco
+
+            while True:
+                try:
+                    caminho = input('Informe o caminho do .txt onde deseja guardar o binário decodificado: ')
+                    arquivo = open(caminho, 'w')
+                    arquivo.write(saida)
+                    print('Arquivos salvos no caminho:', caminho)
+                    break
+                except:
+                    mensagemErro('Arquivo não encontrado')
+
 if __name__=='__main__':
     main()
