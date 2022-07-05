@@ -75,6 +75,13 @@ def criarQ0(binario): #Cria o bit necessário para todas as linhas
     else:
         return 0     
 
+def embaralhador(bits):
+    saida = ''
+    for i in range(16):
+        for a in range(16):
+            saida = saida + bits[(a * 16) + i]
+    return saida
+
 def main():
     alternatives = ['A', 'B', 'C', 'D']
     
@@ -155,6 +162,15 @@ def main():
                 saida = "0" + saida                                                             
                 x += 1
             arquivo = saida + arquivo
+            
+        zeros = ''                                                              #Transforma o total de blocos em um múltiplo de 16
+        tamanho = ((len(arquivo) / 11) * 5) + len(arquivo)
+        tamanho = tamanho / 16
+        if ((tamanho % 16) != 0):
+            resto = tamanho % 16
+            for i in range((16-resto)*11):
+                zeros = zeros + '0'
+            arquivo = zeros + arquivo
         
         inicio = 0
         fim = 11
@@ -168,7 +184,7 @@ def main():
             inicio = fim
             fim += 11
         
-        for index, saida in enumerate(conjuntos):                               #Encaixa os bits de paridade nas posições necessárias    
+        for index, saida in enumerate(conjuntos):                               # Encaixa os bits de paridade nas posições necessárias    
             lista = list(saida)
             lista[1] = str(criarQ1(saida))
             lista[2] = str(criarQ2(saida))
@@ -177,8 +193,10 @@ def main():
             lista[0] = str(criarQ0("".join(lista)))
             saida = "".join(lista)
             conjuntos[index] = saida
-        saida = ''.join(conjuntos)
-
+        
+        saida = ''.join(conjuntos)                   
+        saida = embaralhador(saida)
+        
         while True:
             try:
                 caminho = input('Informe o caminho do .txt onde deseja guardar os binários: ')
@@ -274,6 +292,7 @@ def main():
                 saida = saida + ''.join(bloco)
             
             saida = saida[saida.index('1'):]
+            saida = embaralhador(saida)
                 
             while True:
                 try:
