@@ -23,16 +23,29 @@ def main():
             mensagemErro('Opção inválida')
             
     if (choice == 'A'):
-        caminho = input('Informe o caminho completo do arquivo: ')              #Lê o arquivo em bytes       
-        with open(caminho, 'rb') as arquivo:
-            saida = []
-            while True:
-                byte = arquivo.read(1)
-                byte = int.from_bytes(byte, byteorder='little')  
-                saida.append(byte)
-                if not(byte):
-                    break
-            print(saida)
+        caminho = input('Informe o caminho completo do arquivo: ')              #Lê o arquivo em bytes
+        caminhoSaida = input('Informe o caminho completo da saida (com o formato): ')       
+        arquivo = open(caminho, 'rb')
+        arquivoSaida = open(caminhoSaida, 'wb')
+        
+        while True:
+            byte = arquivo.read(1)
+            if byte == b'':
+                break
+            inteiro = int.from_bytes(byte, 'little')
+
+            binario = bin(inteiro)
+            binario = str(binario)
+            print(binario)
+            print(len(binario))
+            binario = binario[2:]
+            intBinario = int(binario, 2)
+
+            byte = intBinario.to_bytes(1, 'little')
+            arquivoSaida.write(byte)
+        
+        arquivo.close()
+        arquivoSaida.close()
 
 if __name__ == '__main__':
     main()        
