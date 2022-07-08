@@ -1,4 +1,5 @@
 import time
+from functools import reduce
 
 def mensagemErro(mensagem):
     """ Mensagem de erro para alternativas inexistentes
@@ -54,6 +55,35 @@ def onzeParaHamming(onze):
 
     return hamming
 
+def decodificaHamming(bits):
+    erro = reduce(lambda x, y: x^y, [i for i, bit in enumerate(bits) if bit])
+    primeiroBit = True
+    if ((bits[1:].count(1) % 2 == 1) and (bits[0] == 0)) or ((bits[1:].count(1) % 2 == 0) and (bits[0] == 1)):
+        primeiroBit = False
+        
+    if (erro != 0 and primeiroBit == True):
+        return -2                                  # Mais de dois erros
+    elif (erro == 0 and primeiroBit == False):
+        return -1                                  # Erro na posição zero 
+    else:
+        return erro                                # Um ou nenhum erro encontrado
+
+def binarioParaInteiro(binario):
+    retorno = 0
+    i = 0
+    n = 8
+
+    while n >= 0:
+        resto = binario % 10
+        retorno = retorno + (resto * (2**i))
+        n = n - 1
+        i = i + 1
+        binario = binario // 10
+
+    return retorno
+
+    # PRECISAMOS CONVERTER OS ITENS DA LISTA PARA BYTE DE FORMA QUE CONSIGAMOS LER EXATAMENTE OS MESMOS BITS DO OUTRO LADO, DE PREFERENCIA SEM STRING E MANDANDO O ARQUIVO PARA UM .BIN E N .TXT
+
 def main():
     alternatives = ['A', 'B']
     
@@ -77,7 +107,7 @@ def main():
         
         bits = []
         arquivo = open(caminho, 'rb')                                                           #Lê o arquivo em bytes
-        arquivoSaida = open(caminhoSaida, 'wb')
+        arquivoSaida = open(caminhoSaida, 'w')
         
         while True:
             byte = arquivo.read(100)
@@ -97,31 +127,37 @@ def main():
             while True:
                 if (len(bits) >= 11):
                     bitComHamming.extend(onzeParaHamming(bits[0:11]))
+                    #arquivoSaida.write(''.join(bitComHamming))
                     bits = bits[11:]
                 else:
-                    break       
-                        
-            #inteiro = int.from_bytes(byte, 'little')
-            #binario = bin(inteiro)
-            #binario = str(binario)
-            #binario = binario[2:]
+                    break
+            print(bitComHamming)
+            break
 
-            #if (len(binario) % 11 != 0):                                        #Verifica se o binário é múltiplo de 11
-            #    x = 0                                                                                   
-            #while True:                                                         #coleta o primeiro multiplo de 11 acima da do tamanho do binário        
-            #    if (x > len(binario)):
-            #        break 
-            #    x += 11
-            #qtdZeros = x - len(binario)
-            
-            #intBinario = int(saida, 2)
-            #byte = intBinario.to_bytes(3, 'little')
-            #arquivoSaida.write(byte) 
-            break  
-                
-        # Fechar os arquivos
-        arquivo.close()
-        arquivoSaida.close()
+    #   if (len(bits) % 11 != 0):                                        #Verifica se o binário é múltiplo de 11
+    #       x = 0                                                                                   
+    #   while True:                                                         #coleta o primeiro multiplo de 11 acima da do tamanho do binário        
+    #       if (x > len(bits)):
+    #           break 
+    #       x += 11
+    #   qtdZeros = x - len(bits)
+    #   temp = [0] * qtdZeros
+    #   bits = temp.extend(bits)
+    #
+    #  #intBinario = int(saida, 2)
+    #  #byte = intBinario.to_bytes(3, 'little')
+
+    #   arquivoSaida.write(''.join(bits)) 
+
+    #      #saida = ''
+    #      #for i in bitComHamming:
+    #      #    saida = saida + i
+    #      #    if (len(saida) == 8):
+    #      #        numero = binarioParaInteiro(saida)
+    # 
+    #   # Fechar os arquivos
+    #   arquivo.close()
+    #   arquivoSaida.close()
 
 if __name__ == '__main__':
     main()        
