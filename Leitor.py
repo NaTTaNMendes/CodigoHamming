@@ -63,7 +63,7 @@ def bla():
         print(len(x))
 
 
-from random import randint # funções para gerar valores aleatorios
+from random import randint, seed # funções para gerar valores aleatorios
 seed(3) # alterar a semente do gerador
 onze = [ randint(0,1) for i in range(0,11) ]
 print(onze)
