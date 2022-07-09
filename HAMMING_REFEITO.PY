@@ -68,18 +68,29 @@ def decodificaHamming(bits):
     else:
         return erro                                # Um ou nenhum erro encontrado
 
-def binarioParaInteiro(binario):
-    retorno = 0
-    i = 0
-    n = 8
+def bitParaInteiro(bits):
+    BlocoHamming = []
+    retorno = []
+    # fatiar a lista em listas de tamanho 8
+    for i in range(0, len(bits), 8):
+        BlocoHamming.append(bits[i:i+8])    
 
-    while n >= 0:
-        resto = binario % 10
-        retorno = retorno + (resto * (2**i))
-        n = n - 1
-        i = i + 1
-        binario = binario // 10
-
+    # para cada lista l da lista
+    for l in BlocoHamming:
+        # inicialize potência com o 2**8 utilizando operações bit a bit
+        pot = (1<<7)
+        # criar uma acumulador chamado palavra, afinal um grupo de bytes é uma
+        # palavra
+        word = 0
+        # para cada bit da lista l
+        for b in l:
+            # guarde o valor do bit vezes a sua potência
+            word += b * pot
+            # reduza a potência pela divisão por dois usando bit a bit
+            pot = pot >> 1
+        # esse último for faz a conversão binário para decimal
+        byte = word.to_bytes(1, 'little')
+        retorno.append(byte)
     return retorno
 
     # PRECISAMOS CONVERTER OS ITENS DA LISTA PARA BYTE DE FORMA QUE CONSIGAMOS LER EXATAMENTE OS MESMOS BITS DO OUTRO LADO, DE PREFERENCIA SEM STRING E MANDANDO O ARQUIVO PARA UM .BIN E N .TXT
@@ -107,7 +118,7 @@ def main():
         
         bits = []
         arquivo = open(caminho, 'rb')                                                           #Lê o arquivo em bytes
-        arquivoSaida = open(caminhoSaida, 'w')
+        arquivoSaida = open(caminhoSaida, 'wb')
         
         while True:
             byte = arquivo.read(100)
@@ -127,37 +138,33 @@ def main():
             while True:
                 if (len(bits) >= 11):
                     bitComHamming.extend(onzeParaHamming(bits[0:11]))
-                    #arquivoSaida.write(''.join(bitComHamming))
                     bits = bits[11:]
                 else:
                     break
-            print(bitComHamming)
-            break
-
-    #   if (len(bits) % 11 != 0):                                        #Verifica se o binário é múltiplo de 11
-    #       x = 0                                                                                   
-    #   while True:                                                         #coleta o primeiro multiplo de 11 acima da do tamanho do binário        
-    #       if (x > len(bits)):
-    #           break 
-    #       x += 11
-    #   qtdZeros = x - len(bits)
-    #   temp = [0] * qtdZeros
-    #   bits = temp.extend(bits)
-    #
-    #  #intBinario = int(saida, 2)
-    #  #byte = intBinario.to_bytes(3, 'little')
-
-    #   arquivoSaida.write(''.join(bits)) 
-
-    #      #saida = ''
-    #      #for i in bitComHamming:
-    #      #    saida = saida + i
-    #      #    if (len(saida) == 8):
-    #      #        numero = binarioParaInteiro(saida)
-    # 
-    #   # Fechar os arquivos
-    #   arquivo.close()
-    #   arquivoSaida.close()
+            
+                
+            listaBytes = bitParaInteiro(bitComHamming)
+            for byte in listaBytes:
+                arquivoSaida.write(byte)
+        
+        if (len(bits) != 0):
+            x = 0                                                                                   
+            while True:                                              #coleta o primeiro multiplo de 11 acima da do tamanho do binário        
+                if (x > len(bits)):                                                               
+                    break                                                                       
+                x += 11                                                                         
+            qtdZeros = x - len(bits)                                                                                                                                                         
+            x = 0                                                                               
+            saida = ""                                                                          
+            while True:                                              #adiciona os 0 para que o binário se torne multiplo de 11               
+                if (x == qtdZeros):                                                                
+                    break                                                                       
+                saida = "0" + saida                                                             
+                x += 1
+            arquivo = saida + arquivo
+        # Fechar os arquivos
+        arquivo.close()
+        arquivoSaida.close()
 
 if __name__ == '__main__':
     main()        
