@@ -83,7 +83,7 @@ def embaralhador(bits):
     return saida
 
 def main():
-    alternatives = ['A', 'B', 'C', 'D']
+    alternatives = ['A', 'B', 'C', 'D', 'E']
     
     while True:                                                                                     
         print('BEM VINDO AO CODIFICADOR DE DECODIFICADOR DE HAMMING')
@@ -92,6 +92,7 @@ def main():
         print('B - Transformar uma string em binário')
         print('C - Codificar um binário em Hamming (Corrige apenas 1 bit e detecta 2)')
         print('D - Decodificar um binário em Hamming (Corrige apenas 1 bit e detecta 2)')
+        print('E - Transformar um binario txt em um novo arquivo')
         print('\n'*2)
         choice = input('Sua alternativa: ').upper()
 
@@ -101,29 +102,29 @@ def main():
             mensagemErro('Opção inválida')
 
     if (choice == 'A'):                                                                             
-            while True:
-                try:
-                    caminho = input('Informe o caminho do arquivo: ')                                   
-                    arquivo = open(caminho, 'rb').read()                                          
-                    arquivo = str(arquivo)                                                                                                                       
-                    byteArrayEntrada = bytearray(arquivo, "utf8")                                   
-                    saida = ''
-                    for byte in byteArrayEntrada:                                                   
-                        binario = bin(byte)
-                        saida = saida + binario[2:]               
-                    break
-                except:
-                    mensagemErro('Arquivo não encontrado')
+        while True:
+            try:
+                caminho = input('Informe o caminho do arquivo: ')                                   
+                arquivo = open(caminho, 'rb').read()                                          
+                arquivo = str(arquivo)
+                byteArrayEntrada = bytearray(arquivo, "utf8")                                   
+                saida = ''
+                for byte in byteArrayEntrada:                                                   
+                    binario = bin(byte)
+                    saida = saida + binario[2:]               
+                break
+            except:
+                mensagemErro('Arquivo não encontrado')
 
-            while True:
-                try:
-                    caminho = input('Informe o caminho do .txt onde deseja guardar os binários: ')
-                    arquivo = open(caminho, 'w')
-                    arquivo.write(saida)
-                    print('Arquivos salvos no caminho:', caminho)
-                    break
-                except:
-                    mensagemErro('Arquivo não encontrado')
+        while True:
+            try:
+                caminho = input('Informe o caminho do .txt onde deseja guardar os binários: ')
+                arquivo = open(caminho, 'w')
+                arquivo.write(saida)
+                print('Arquivos salvos no caminho:', caminho)
+                break
+            except:
+                mensagemErro('Arquivo não encontrado')
                    
     if (choice == 'B'):
         entrada = input('Informe a string para ser convertida: ')
@@ -140,7 +141,7 @@ def main():
         qtdZeros = 0
         while True:
             try:
-                caminho = input('Informe o caminho do arquivo binário a ser codificado: ')                                   
+                caminho = input('Informe o caminho do arquivo binário a ser codificado: ')
                 arquivo = open(caminho, 'r').read()                                          
                 arquivo = str(arquivo)
                 break
@@ -149,7 +150,7 @@ def main():
                                                                                                                                                     
         if (len(arquivo) % 11 != 0):                                            #Verifica se o binário é múltiplo de 11
             x = 0                                                                                   
-            while True:                                                         #coleta o primeiro multiplo de 11 acima da do tamanho do binário        
+            while True:                                                         #coleta o primeiro multiplo de 11 acima do tamanho do binário        
                 if (x > len(arquivo)):                                                               
                     break                                                                       
                 x += 11                                                                         
@@ -163,14 +164,14 @@ def main():
                 x += 1
             arquivo = saida + arquivo
             
-        zeros = ''                                                              #Transforma o total de blocos em um múltiplo de 16
-        tamanho = ((len(arquivo) / 11) * 5) + len(arquivo)
-        tamanho = tamanho / 16
-        if ((tamanho % 16) != 0):
-            resto = tamanho % 16
-            for i in range((16-resto)*11):
-                zeros = zeros + '0'
-            arquivo = zeros + arquivo
+    #  zeros = ''                                                              #Transforma o total de blocos em um múltiplo de 16
+    #  tamanho = ((len(arquivo) / 11) * 5) + len(arquivo)
+    #  tamanho = tamanho / 16
+    #  if ((tamanho % 16) != 0):
+    #      resto = tamanho % 16
+    #      for i in range((16-resto)*11):
+    #          zeros = zeros + '0'
+    #      arquivo = zeros + arquivo
         
         inicio = 0
         fim = 11
@@ -195,7 +196,7 @@ def main():
             conjuntos[index] = saida
         
         saida = ''.join(conjuntos)                   
-        saida = embaralhador(saida)
+    #   saida = embaralhador(saida)
         
         while True:
             try:
@@ -262,13 +263,13 @@ def main():
                             a += bloco[i]
                     bloco = a
 
-                    print('ERRO ENCONTRADO NO BLOCO %.0d E NA POSIÇÃO %.0d CORRIGIDO!' % (index, xor))
+                    #print('ERRO ENCONTRADO NO BLOCO %.0d E NA POSIÇÃO %.0d CORRIGIDO!' % (index, xor))
                 elif (xor != 0) and (checkQ0 == True):
                     print('MAIS DE DOIS ERROS ENCONTRADOS NO BLOCO %.0d' % (index))
                     podeRetornar = False 
                                    
-                elif (xor == 0) and checkQ0:
-                    print('NENHUM ERRO ENCONTRADO NO BLOCO %.0d' % (index))
+                #elif (xor == 0) and checkQ0:
+                    #print('NENHUM ERRO ENCONTRADO NO BLOCO %.0d' % (index))
                 else:
                     if (bloco[0] == '0'):
                         bloco = bloco[1:]
@@ -276,7 +277,7 @@ def main():
                     else:
                         bloco = bloco[1:]
                         bloco = '0' + bloco
-                    print('ERRO ENCONTRADO NO BLOCO %.0d E NA POSIÇÃO 0 CORRIGIDO!' % (index))
+                   # print('ERRO ENCONTRADO NO BLOCO %.0d E NA POSIÇÃO 0 CORRIGIDO!' % (index))
                                                     
             decodificados.append(bloco)
 
@@ -292,7 +293,7 @@ def main():
                 saida = saida + ''.join(bloco)
             
             saida = saida[saida.index('1'):]
-            saida = embaralhador(saida)
+        #    saida = embaralhador(saida)
                 
             while True:
                 try:
@@ -303,6 +304,13 @@ def main():
                     break
                 except:
                     mensagemErro('Arquivo não encontrado')
+
+    if (choice == 'E'):
+        caminho = input('Informe o caminho do arquivo .txt onde está o hamming decodificado: ')
+        arquivo = open(caminho, 'r').read()
+        caminhoSaida = input('Informe o caminho completo da saida (com o formato): ')
+        arquivoSaida = open(caminhoSaida, 'wb')
+        arquivoSaida.write(str.encode(arquivo))        
 
 if __name__=='__main__':
     main()

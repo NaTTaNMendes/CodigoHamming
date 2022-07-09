@@ -1,5 +1,6 @@
 import time
 from functools import reduce
+import operator as op
 
 def mensagemErro(mensagem):
     """ Mensagem de erro para alternativas inexistentes
@@ -56,17 +57,40 @@ def onzeParaHamming(onze):
     return hamming
 
 def decodificaHamming(bits):
-    erro = reduce(lambda x, y: x^y, [i for i, bit in enumerate(bits) if bit])
+    #erro = reduce(op.xor, [i for i, bit in enumerate(bits) if bit])
+    posicoes = []
+    for index, bit in enumerate(bits):
+        if bit == 1:
+            posicoes.append(index)
+    
+    if (len(posicoes) > 0):
+        erro = posicoes[0]
+    else:
+        erro = 0
+
+    for i in range(1, len(posicoes)):
+        erro = erro ^ posicoes[i]
+
     primeiroBit = True
     if ((bits[1:].count(1) % 2 == 1) and (bits[0] == 0)) or ((bits[1:].count(1) % 2 == 0) and (bits[0] == 1)):
         primeiroBit = False
         
     if (erro != 0 and primeiroBit == True):
-        return -2                                  # Mais de dois erros
-    elif (erro == 0 and primeiroBit == False):
-        return -1                                  # Erro na posição zero 
+        print('Mais de dois erros encontrados')
+        return False                                  # Mais de dois erros
+    elif (erro == 0 and primeiroBit == False):        # Erro na posição zero
+        if (bits[0] == 1):
+            bits[0] = 0
+        else:
+            bits[0] = 1
     else:
-        return erro                                # Um ou nenhum erro encontrado
+        if (erro != 0):
+            if (bits[erro] == 1):
+                bits[erro] = 0
+            else:
+                bits[erro] = 1
+
+    return bits
 
 def bitParaInteiro(bits):
     BlocoHamming = []
@@ -113,7 +137,7 @@ def main():
             mensagemErro('Opção inválida')
             
     if (choice == 'A'):
-        caminho = input('Informe o caminho completo do arquivo: ')                      
+        caminho = input('Informe o caminho completo do arquivo: ')
         caminhoSaida = input('Informe o caminho completo da saida (com o formato): ')
         
         bits = []
@@ -141,30 +165,81 @@ def main():
                     bits = bits[11:]
                 else:
                     break
-            
-                
+                           
             listaBytes = bitParaInteiro(bitComHamming)
             for byte in listaBytes:
                 arquivoSaida.write(byte)
-        
+
         if (len(bits) != 0):
-            x = 0                                                                                   
-            while True:                                              #coleta o primeiro multiplo de 11 acima da do tamanho do binário        
-                if (x > len(bits)):                                                               
-                    break                                                                       
-                x += 11                                                                         
-            qtdZeros = x - len(bits)                                                                                                                                                         
-            x = 0                                                                               
-            saida = ""                                                                          
-            while True:                                              #adiciona os 0 para que o binário se torne multiplo de 11               
-                if (x == qtdZeros):                                                                
-                    break                                                                       
-                saida = "0" + saida                                                             
-                x += 1
-            arquivo = saida + arquivo
+            qtdZeros = 11 - len(bits)
+            zeros = [0] * qtdZeros
+            bits = [*zeros, *bits]
+            bits = onzeParaHamming(bits)
+            byte = bitParaInteiro(bits)
+
+            for byte in listaBytes:
+                arquivoSaida.write(byte)
+
         # Fechar os arquivos
         arquivo.close()
         arquivoSaida.close()
+    
+    if (choice == 'B'):
+        caminho = input('Informe o caminho completo do arquivo a ser restaurado: ')
+        caminhoSaida = input('Informe o caminho completo da saida (com o formato): ')
+
+        bits = []
+        arquivo = open(caminho, 'rb')                                                           #Lê o arquivo em bytes
+        arquivoSaida = open(caminhoSaida, 'wb')
+
+        while True:
+            byte = arquivo.read(100)
+            
+            if byte == b'':
+                break
+            
+            inteiro = int.from_bytes(byte, 'little')
+            binario = bin(inteiro)
+            binario = binario[2:]
+            
+            for i in binario:
+                bits.append(int(i))
+            
+            bitDecodificado = []
+            
+            cancelar = False
+            while cancelar != True:
+                if (len(bits) >= 16):
+                    blocoDecodificado = decodificaHamming(bits[0:16])
+                    if blocoDecodificado == False:
+                        cancelar = True
+                        break 
+                    bitDecodificado.extend(blocoDecodificado)
+                    bits = bits[16:]
+                    print(bits)
+                else:
+                    break
+            
+            if (cancelar):
+                break
+                           
+            listaBytes = bitParaInteiro(bitDecodificado)
+            for byte in listaBytes:
+                arquivoSaida.write(byte)
+
+        if (len(bits) != 0):
+            qtdZeros = 16 - len(bits)
+            zeros = [0] * qtdZeros
+            bits = [*zeros, *bits]
+            bits = decodificaHamming(bits)
+            byte = bitParaInteiro(bits)
+
+            for byte in listaBytes:
+                arquivoSaida.write(byte)
+
+        # Fechar os arquivos
+        arquivo.close()
+        arquivoSaida.close()  
 
 if __name__ == '__main__':
     main()        
