@@ -140,7 +140,7 @@ def main():
         
         bits = []
         arquivo = open(caminho, 'rb')                                                           #Lê o arquivo em bytes
-        arquivoSaida = open(caminhoSaida, 'wb')
+        arquivoSaida = open(caminhoSaida, 'w')
         
         while True:
             byte = arquivo.read(100)

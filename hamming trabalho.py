@@ -83,16 +83,14 @@ def embaralhador(bits):
     return saida
 
 def main():
-    alternatives = ['A', 'B', 'C', 'D', 'E']
+    alternatives = ['A', 'B', 'C']
     
     while True:                                                                                     
         print('BEM VINDO AO CODIFICADOR DE DECODIFICADOR DE HAMMING')
-        print('\n'*3)
+        print('\n'*2)
         print('A - Transformar um arquivo em binário')
-        print('B - Transformar uma string em binário')
-        print('C - Codificar um binário em Hamming (Corrige apenas 1 bit e detecta 2)')
-        print('D - Decodificar um binário em Hamming (Corrige apenas 1 bit e detecta 2)')
-        print('E - Transformar um binario txt em um novo arquivo')
+        print('B - Codificar um binário em Hamming')
+        print('C - Decodificar um binário em Hamming')
         print('\n'*2)
         choice = input('Sua alternativa: ').upper()
 
@@ -128,24 +126,13 @@ def main():
             arquivoSaida.write(binario)                               
         
         print('Arquivos salvos no caminho:', caminho)
-                            
+
     if (choice == 'B'):
-        entrada = input('Informe a string para ser convertida: ')
-        byteArrayEntrada = bytearray(entrada, "utf8")
-        saida = ''
-
-        for byte in byteArrayEntrada:
-            binario = bin(byte)
-            saida = saida + binario[2:]
-
-        print('String convertida em binário:', saida)
-
-    if (choice == 'C'):
         qtdZeros = 0
         while True:
             try:
                 caminho = input('Informe o caminho do arquivo binário a ser codificado: ')
-                arquivo = open(caminho, 'r').read()                                          
+                arquivo = open(caminho, 'r').read()
                 arquivo = str(arquivo)
                 break
             except:
@@ -154,10 +141,10 @@ def main():
         if (len(arquivo) % 11 != 0):                                            #Verifica se o binário é múltiplo de 11
             x = 0                                                                                   
             while True:                                                         #coleta o primeiro multiplo de 11 acima do tamanho do binário        
-                if (x > len(arquivo)):                                                               
+                if (x > len(arquivo)):
                     break                                                                       
-                x += 11                                                                         
-            qtdZeros = x - len(arquivo)                                                                                                                                                         
+                x += 11
+            qtdZeros = x - len(arquivo)                                         
             x = 0                                                                               
             saida = ""                                                                          
             while True:                                                         #adiciona os 0 para que o binário se torne multiplo de 11               
@@ -170,20 +157,20 @@ def main():
             
         zeros = ''                                                              #Transforma o total de blocos em um múltiplo de 16
         tamanho = ((len(arquivo) / 11) * 5) + len(arquivo)
-        tamanho = tamanho // 16
-        if ((tamanho % 16) != 0):
-            resto = tamanho % 16
+        qtdBlocos = tamanho // 16
+        if ((qtdBlocos % 16) != 0):
+            resto = qtdBlocos % 16
             resto = int(resto)
             for i in range((16-resto)*11):
                 zeros += '0'
             arquivo = zeros + arquivo
 
-
+        conjuntos = [] 
         inicio = 0
         fim = 11
-        conjuntos = []                                                          #Cria as divisões em grupos de 11 bits e adiciona um 'X' onde deve ser adicionado um bit de paridade
+                                                                 
         while True: 
-            if (fim > len(arquivo)):
+            if (fim > len(arquivo)):                                                     #Cria as divisões em grupos de 11 bits e adiciona um 'X' onde deve ser adicionado um bit de paridade
                 break
             divisao = arquivo[inicio : fim]
             matriz = "xxx" + divisao[0] + "x" + divisao[1:4] + "x" + divisao[4:11]
@@ -217,7 +204,7 @@ def main():
         
         print('Arquivos salvos no caminho:', caminho)                
     
-    if (choice == 'D'):
+    if (choice == 'C'):
         while True:
             try:
                 caminho = input('Informe o caminho do arquivo binário a ser decodificado: ')
@@ -229,7 +216,11 @@ def main():
 
         arquivoDesembaralhado = ''                                                                     #Desembaralha
         for i in range (0, len(arquivo), 256):
-            arquivoDesembaralhado += embaralhador(arquivo[i:i+256]) 
+            try:
+                arquivoDesembaralhado += embaralhador(arquivo[i:i+256])
+            except:
+                print('ERRO: IMPOSSÍVEL RECUPERAR O ARQUIVO, HOUVE INSERÇÃO OU REMOÇÃO DE BITS')
+                exit()
 
         arquivo = arquivoDesembaralhado
 
@@ -283,8 +274,6 @@ def main():
                     print('MAIS DE DOIS ERROS ENCONTRADOS NO BLOCO %.0d' % (index))
                     podeRetornar = False 
                                    
-               #elif (xor == 0) and checkQ0:
-               #    #print('NENHUM ERRO ENCONTRADO NO BLOCO %.0d' % (index))
                 elif not((xor == 0) and checkQ0):
                     if (bloco[0] == '0'):
                         bloco = bloco[1:]
@@ -293,7 +282,7 @@ def main():
                         bloco = bloco[1:]
                         bloco = '0' + bloco
                     print('ERRO ENCONTRADO NO BLOCO %.0d E NA POSIÇÃO 0 CORRIGIDO!' % (index))
-                                                    
+
             decodificados.append(bloco)
 
         saida = ''
@@ -308,7 +297,6 @@ def main():
                 saida = saida + ''.join(bloco)
             
             saida = saida[saida.index('1'):]
-        #    saida = embaralhador(saida)
                 
             while True:
                 try:
@@ -319,14 +307,6 @@ def main():
                     break
                 except:
                     mensagemErro('Arquivo não encontrado')
-
-    # TO FAZENDO ESSA PARTE AINDA
-    if (choice == 'E'):
-        caminho = input('Informe o caminho do arquivo .txt onde está o hamming decodificado: ')
-        arquivo = open(caminho, 'r').read()
-        caminhoSaida = input('Informe o caminho completo da saida (com o formato): ')
-        arquivoSaida = open(caminhoSaida, 'wb')
-        arquivoSaida.write(str.encode(arquivo))        
-
+     
 if __name__=='__main__':
     main()

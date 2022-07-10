@@ -8,3 +8,5 @@ if (arquivo == arquivo2):
     print('igual')
 else:
     print('diferente')
+
+    
