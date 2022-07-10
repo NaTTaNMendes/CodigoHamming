@@ -163,16 +163,19 @@ def main():
                 saida = "0" + saida                                                             
                 x += 1
             arquivo = saida + arquivo
-            
-    #  zeros = ''                                                              #Transforma o total de blocos em um múltiplo de 16
-    #  tamanho = ((len(arquivo) / 11) * 5) + len(arquivo)
-    #  tamanho = tamanho / 16
-    #  if ((tamanho % 16) != 0):
-    #      resto = tamanho % 16
-    #      for i in range((16-resto)*11):
-    #          zeros = zeros + '0'
-    #      arquivo = zeros + arquivo
         
+            
+        zeros = ''                                                              #Transforma o total de blocos em um múltiplo de 16
+        tamanho = ((len(arquivo) / 11) * 5) + len(arquivo)
+        tamanho = tamanho // 16
+        if ((tamanho % 16) != 0):
+            resto = tamanho % 16
+            resto = int(resto)
+            for i in range((16-resto)*11):
+                zeros += '0'
+            arquivo = zeros + arquivo
+
+
         inicio = 0
         fim = 11
         conjuntos = []                                                          #Cria as divisões em grupos de 11 bits e adiciona um 'X' onde deve ser adicionado um bit de paridade
@@ -195,18 +198,21 @@ def main():
             saida = "".join(lista)
             conjuntos[index] = saida
         
-        saida = ''.join(conjuntos)                   
-    #   saida = embaralhador(saida)
-        
+        saida = ''.join(conjuntos)
+
         while True:
             try:
                 caminho = input('Informe o caminho do .txt onde deseja guardar os binários: ')
                 arquivo = open(caminho, 'w')
-                arquivo.write(saida)
-                print('Arquivos salvos no caminho:', caminho)
                 break
             except:
-                mensagemErro('Arquivo não encontrado')           
+                mensagemErro('Arquivo não encontrado')    
+
+        for i in range (0, len(saida), 256):
+            saidaFinal = embaralhador(saida[i:i+256]) 
+            arquivo.write(saidaFinal)
+        
+        print('Arquivos salvos no caminho:', caminho)                
     
     if (choice == 'D'):
         while True:
@@ -217,6 +223,12 @@ def main():
                 break
             except:
                 mensagemErro('Arquivo não encontrado')
+
+        arquivoDesembaralhado = ''                                                                     #Desembaralha
+        for i in range (0, len(arquivo), 256):
+            arquivoDesembaralhado += embaralhador(arquivo[i:i+256]) 
+
+        arquivo = arquivoDesembaralhado
 
         blocos = []                                                                                  #Separa todos os bits em blocos de 16 para a verificação
         bloco = ''
@@ -263,21 +275,21 @@ def main():
                             a += bloco[i]
                     bloco = a
 
-                    #print('ERRO ENCONTRADO NO BLOCO %.0d E NA POSIÇÃO %.0d CORRIGIDO!' % (index, xor))
+                    print('ERRO ENCONTRADO NO BLOCO %.0d E NA POSIÇÃO %.0d CORRIGIDO!' % (index, xor))
                 elif (xor != 0) and (checkQ0 == True):
                     print('MAIS DE DOIS ERROS ENCONTRADOS NO BLOCO %.0d' % (index))
                     podeRetornar = False 
                                    
-                #elif (xor == 0) and checkQ0:
-                    #print('NENHUM ERRO ENCONTRADO NO BLOCO %.0d' % (index))
-                else:
+               #elif (xor == 0) and checkQ0:
+               #    #print('NENHUM ERRO ENCONTRADO NO BLOCO %.0d' % (index))
+                elif not((xor == 0) and checkQ0):
                     if (bloco[0] == '0'):
                         bloco = bloco[1:]
                         bloco = '1' + bloco
                     else:
                         bloco = bloco[1:]
                         bloco = '0' + bloco
-                   # print('ERRO ENCONTRADO NO BLOCO %.0d E NA POSIÇÃO 0 CORRIGIDO!' % (index))
+                    print('ERRO ENCONTRADO NO BLOCO %.0d E NA POSIÇÃO 0 CORRIGIDO!' % (index))
                                                     
             decodificados.append(bloco)
 
@@ -305,6 +317,7 @@ def main():
                 except:
                     mensagemErro('Arquivo não encontrado')
 
+    # TO FAZENDO ESSA PARTE AINDA
     if (choice == 'E'):
         caminho = input('Informe o caminho do arquivo .txt onde está o hamming decodificado: ')
         arquivo = open(caminho, 'r').read()

@@ -57,19 +57,19 @@ def onzeParaHamming(onze):
     return hamming
 
 def decodificaHamming(bits):
-    #erro = reduce(op.xor, [i for i, bit in enumerate(bits) if bit])
-    posicoes = []
-    for index, bit in enumerate(bits):
-        if bit == 1:
-            posicoes.append(index)
-    
-    if (len(posicoes) > 0):
-        erro = posicoes[0]
-    else:
-        erro = 0
+    erro = reduce(op.xor, [i for i, bit in enumerate(bits) if bit])
+   #posicoes = []
+   #for index, bit in enumerate(bits):
+   #    if bit == 1:
+   #        posicoes.append(index)
+   #
+   #if (len(posicoes) > 0):
+   #    erro = posicoes[0]
+   #else:
+   #    erro = 0
 
-    for i in range(1, len(posicoes)):
-        erro = erro ^ posicoes[i]
+   #for i in range(1, len(posicoes)):
+   #    erro = erro ^ posicoes[i]
 
     primeiroBit = True
     if ((bits[1:].count(1) % 2 == 1) and (bits[0] == 0)) or ((bits[1:].count(1) % 2 == 0) and (bits[0] == 1)):
@@ -116,8 +116,6 @@ def bitParaInteiro(bits):
         byte = word.to_bytes(1, 'little')
         retorno.append(byte)
     return retorno
-
-    # PRECISAMOS CONVERTER OS ITENS DA LISTA PARA BYTE DE FORMA QUE CONSIGAMOS LER EXATAMENTE OS MESMOS BITS DO OUTRO LADO, DE PREFERENCIA SEM STRING E MANDANDO O ARQUIVO PARA UM .BIN E N .TXT
 
 def main():
     alternatives = ['A', 'B']
