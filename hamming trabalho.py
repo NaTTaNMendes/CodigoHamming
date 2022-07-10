@@ -105,13 +105,7 @@ def main():
         while True:
             try:
                 caminho = input('Informe o caminho do arquivo: ')                                   
-                arquivo = open(caminho, 'rb').read()                                          
-                arquivo = str(arquivo)
-                byteArrayEntrada = bytearray(arquivo, "utf8")                                   
-                saida = ''
-                for byte in byteArrayEntrada:                                                   
-                    binario = bin(byte)
-                    saida = saida + binario[2:]               
+                arquivo = open(caminho, 'rb')
                 break
             except:
                 mensagemErro('Arquivo não encontrado')
@@ -119,13 +113,22 @@ def main():
         while True:
             try:
                 caminho = input('Informe o caminho do .txt onde deseja guardar os binários: ')
-                arquivo = open(caminho, 'w')
-                arquivo.write(saida)
-                print('Arquivos salvos no caminho:', caminho)
+                arquivoSaida = open(caminho, 'w')
                 break
             except:
                 mensagemErro('Arquivo não encontrado')
-                   
+
+        while True:
+            byte = arquivo.read(100)
+            if byte == b'':
+                break                                    
+            inteiro = int.from_bytes(byte, 'little')
+            binario = bin(inteiro)
+            binario = binario[2:]  
+            arquivoSaida.write(binario)                               
+        
+        print('Arquivos salvos no caminho:', caminho)
+                            
     if (choice == 'B'):
         entrada = input('Informe a string para ser convertida: ')
         byteArrayEntrada = bytearray(entrada, "utf8")
