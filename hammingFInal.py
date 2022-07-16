@@ -158,6 +158,7 @@ def criarQ0(binario):
         return 0     
 
 def embaralhador(bits):
+    print(bits)
     """ O interpolador do código de hamming
 
     Essa função é responsável por interpolar 16 blocos de 16 bits
@@ -190,8 +191,25 @@ def mensagemErro(mensagem):
     """
     # Imprime a mensagem contendo o erro.
     print(mensagem)
-    time.sleep(1.5)
+    time.sleep(0.5)
     print('\n'*130)
+
+def binarioParaInt(lista):
+
+    # inicialize potência com o 2**8 utilizando operações bit a bit
+    pot = (1<<7)
+    # criar uma acumulador chamado palavra, afinal um grupo de bytes é uma
+    # palavra
+    word = 0
+    # para cada bit da lista l
+    for b in lista:
+        b = int(b)
+        # guarde o valor do bit vezes a sua potência
+        word += b * pot
+        # reduza a potência pela divisão por dois usando bit a bit
+        pot = pot >> 1
+    return word
+    
 
 def main():
     """Função principal do programa
@@ -232,9 +250,9 @@ def main():
             # Caso o usuario digite um arquivo inexistente, será exibido 
             # a mensagem de erro.
             try:
-                caminho = input('Informe o caminho do arquivo: ')      
+                '''caminho = input('Informe o caminho do arquivo: ')'''      
                 # Lê o arquivo em binário                             
-                arquivoEntrada = open(caminho, 'rb')
+                arquivoEntrada = open('imagem.jpg', 'rb')
                 break
             except:
                 mensagemErro('Arquivo não encontrado')
@@ -244,8 +262,8 @@ def main():
             # Caso o usuario digite um arquivo inexistente, será exibido 
             # a mensagem de erro.
             try:
-                caminho = input('Informe o caminho onde deseja guardar os binários: ')
-                arquivoSaida = open(caminho, 'wb')
+                '''caminho = input('Informe o caminho onde deseja guardar os binários: ')'''
+                arquivoSaida = open('arquivo.bin', 'wb')
                 break
             except:
                 mensagemErro('Arquivo não encontrado')
@@ -253,7 +271,7 @@ def main():
         bits = []
         while True:
             # Lê 2 bytes por vez
-            bytes = arquivoEntrada.read(1)
+            bytes = arquivoEntrada.read(2)
             if bytes == b'':
                 # Quando terminar ele para o while
                 break
@@ -270,8 +288,10 @@ def main():
                     if (len(entrada) == 11):
                         blocos.append(entrada)
                         bits = bits[index:]
-                    if (len(entrada) < 11):
-                        break
+
+                '''if (len(entrada) < 11):
+                    print(blocos)
+                    break'''
                 
                 blocoComHamming = []
                 for i in blocos:
@@ -288,36 +308,16 @@ def main():
                     lista[0] = str(criarQ0("".join(lista)))
                     saida = "".join(lista)
                     blocoComHamming[index] = saida
-                
-                
+                    print(blocoComHamming)
+                embaralhado = ""
                 for i in blocoComHamming:
-                    print(i)
-                #   byte1 = i[0:4]
-                #   byte2 = i[4:]
-                #   
-                #   listas = []
-
-                #   # para cada lista l da lista
-                #   for l in listas:
-                #       # inicialize potência com o 2**8 utilizando operações bit a bit
-                #       pot = (1<<8)
-                #       # criar uma acumulador chamado palavra, afinal um grupo de bytes é uma
-                #       # palavra
-                #       word = 0
-                #       # para cada bit da lista l
-                #       for b in l:
-                #           # guarde o valor do bit vezes a sua potência
-                #           word += b * pot
-                #           # reduza a potência pela divisão por dois usando bit a bit
-                #           pot = pot >> 1
-                #       # esse último for faz a conversão binário para decimal
-                #       print(word)
-
-                    
-                        
+                    embaralhado += ''.join(i)
                 
-            
-    
+            '''embaralhado = embaralhador(embaralhado)
+            print(embaralhado)
+            print(len(embaralhado))
+            arquivoSaida.write'''
+
 
 if __name__=='__main__':
     main()
