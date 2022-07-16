@@ -158,7 +158,6 @@ def criarQ0(binario):
         return 0     
 
 def embaralhador(bits):
-    print(bits)
     """ O interpolador do código de hamming
 
     Essa função é responsável por interpolar 16 blocos de 16 bits
@@ -252,7 +251,7 @@ def main():
             try:
                 '''caminho = input('Informe o caminho do arquivo: ')'''      
                 # Lê o arquivo em binário                             
-                arquivoEntrada = open('imagem.jpg', 'rb')
+                arquivoEntrada = open('teste.py', 'rb')
                 break
             except:
                 mensagemErro('Arquivo não encontrado')
@@ -269,18 +268,21 @@ def main():
                 mensagemErro('Arquivo não encontrado')
         
         bits = []
+        embaralhado = ""
         while True:
             # Lê 2 bytes por vez
-            bytes = arquivoEntrada.read(2)
-            if bytes == b'':
-                # Quando terminar ele para o while
-                break
-            
+            bytes = arquivoEntrada.read(1)
+
+
             for i in bytes:
                 for j in bin(i)[2:].zfill(8):
                     bits.append(j)
             
-            if (len(bits) >= 176):
+            if (len(bits) >= 176 or (len(bits) <= 175 and bytes == b'')):
+                if len(bits) <= 175:
+                    for i in range(0, (176-len(bits))):
+                        bits.insert(0, '0')
+
                 blocos = []
                 entrada = ''
                 for index, i in enumerate(bits):
@@ -288,10 +290,6 @@ def main():
                     if (len(entrada) == 11):
                         blocos.append(entrada)
                         bits = bits[index:]
-
-                '''if (len(entrada) < 11):
-                    print(blocos)
-                    break'''
                 
                 blocoComHamming = []
                 for i in blocos:
@@ -308,16 +306,38 @@ def main():
                     lista[0] = str(criarQ0("".join(lista)))
                     saida = "".join(lista)
                     blocoComHamming[index] = saida
-                    print(blocoComHamming)
-                embaralhado = ""
+                
                 for i in blocoComHamming:
                     embaralhado += ''.join(i)
-                
-            '''embaralhado = embaralhador(embaralhado)
-            print(embaralhado)
-            print(len(embaralhado))
-            arquivoSaida.write'''
 
+                    '''while True:
+                        if (len(embaralhado) == 0):
+                            break
+                        saida = embaralhado[0:9]
+                        embaralhado = embaralhado[9:]
+                        saida = binarioParaInt(saida)
+                        saida = saida.to_bytes(1, 'little')
+                        arquivoSaida.write(saida)
+
+        if (len(bits) > 0):
+            bits = ''.join(bits)
+            bits = bits.zfill(176)'''
+                    if len(embaralhado) >= 256:
+                        embaralhado = embaralhador(embaralhado)
+                        bit_8 = ''
+                        for j in range(1, 257):
+                            if j%8 == 0:
+                                arquivoSaida.write(binarioParaInt(bit_8).to_bytes(1, 'little'))
+                                bit_8 = ''
+                            bit_8 += embaralhado[j-1]
+                        embaralhado = ""
+            if bytes == b'':
+            # Quando terminar ele para o while
+                break
+        arquivoEntrada.close()
+        arquivoSaida.close()
+        print(bits)
+        print(len(bits))
 
 if __name__=='__main__':
     main()
