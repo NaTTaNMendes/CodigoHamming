@@ -212,56 +212,41 @@ def binarioParaInt(lista):
     return word
     
 def alternativaA():
-    """_summary_
-    """
-
-    # Aqui estão as variáveis que abrem os arquivos (tanto o que será
-    # codificado quanto o que vai receber o arquivo binario com hamming).              
-    arquivoEntrada = open('imagem.png', 'rb') 
+    arquivoEntrada = open('imagem.png', 'rb')
     arquivoSaida = open('arquivo.bin', 'wb')
-    
     bits = []
-    embaralhado = ""
-    # Verifica o tamanho da imagem para fazer a verificação depois.
-    qtdBytes = Path('imagem.png').stat().st_size
-    # Adiciona os zeros para fechar com o tamanho de 176 bits.
-    if ((qtdBytes * 8) % 176 != 0):
-        zeros = ['0'] * (176 - (qtdBytes * 8) % 176)
-        bits.extend(zeros)
+
+    totalBytes = Path('imagem.png').stat().st_size                      # Coleta o total de bytes do arquivo
+    resto = (totalBytes * 8) % 176                                      # e coloca os 0 a esquerda necessários
+    if (resto != 0):
+        for i in range(0, 176-resto):
+            bits.append('0')
     while True:
-        # Lê 2 bytes por vez
         byte = arquivoEntrada.read(1)
 
-        for i in byte:
+        if (byte == b''):
+            break
+
+        for i in byte:                                                  # TRANSFORMA EM BIT
             for j in bin(i)[2:].zfill(8):
                 bits.append(j)
+        
+        if (len(bits) == 176):                                          # DIVIDE EM BLOCOS DE 11 BITS
+            blocos = []                                                                 
+            tmp = ''
+            for i in bits:
+                tmp += i
+                if (len(tmp) == 11):
+                    blocos.append(tmp)
+                    tmp = ''
+            bits = []
 
-       #if (len(bits) >= 176 or (len(bits) <= 175 and bytes == b'')):
-       #    if len(bits) <= 175 and bytes == b'':
-       #        for i in range(0, (176-len(bits))):
-       #            bits.insert(0, '0')
-                    
-            blocos = []
-            entrada = ''
-            # Quando eu adiciono os 0, nesse momento ele corta os 0
-            for index, i in enumerate(bits):
-                entrada += i
-                # Cria varios blocos de 11 bits para poder aplicar hamming
-                # de 16 bits.
-                if (len(entrada) == 11):
-                    blocos.append(entrada)
-                    bits = bits[index:]
-                    entrada = ''
+            blocoHamming = []                                           # MASCARA DE HAMMING APLICADA EM CADA
+            for bloco in blocos:                                        # BLOCO
+                mascara = "xxx" + bloco[0] + "x" + bloco[1:4] + "x" + bloco[4:11]
+                blocoHamming.append(mascara)
 
-            # Essa parte separa os blocos para fazer com que seja aplicado o hamming
-            # nos índices certos do bit.
-            blocoComHamming = []
-            for i in blocos:
-                mascara = "xxx" + i[0] + "x" + i[1:4] + "x" + i[4:11]
-                blocoComHamming.append(mascara) 
-            
-            # Este for coloca os bits de paridade no lugar certo do codigo (onde estavam os 'x')
-            for index, saida in enumerate(blocoComHamming):
+            for index, saida in enumerate(blocoHamming):                # APLICA HAMMING NOS BLOCOS
                 lista = list(saida)
                 lista[1] = str(criarQ1(saida))
                 lista[2] = str(criarQ2(saida))
@@ -269,30 +254,23 @@ def alternativaA():
                 lista[8] = str(criarQ4(saida))
                 lista[0] = str(criarQ0("".join(lista)))
                 saida = "".join(lista)
-                blocoComHamming[index] = saida
+                blocoHamming[index] = saida
             
-            # Pega um bloco 
-            for i in blocoComHamming:
-                embaralhado += ''.join(i)
+            embaralhado = ''                                            # ADICIONA TODOS OS BLOCOS EM UMA STRING
+            for bloco in blocoHamming:                                  # UNICA
+                embaralhado += ''.join(bloco)
 
-                if len(embaralhado) >= 256:
-                    embaralhado = embaralhador(embaralhado)
-                    bit_8 = ''
-                    # Quando a variavel j for divisivel por 8, irá escrever o byte.
-                    for j in range(1, 257):
-                        if j%8 == 0:
-                            # Vai escrever de byte em byte no arquivo.bin
-                            arquivoSaida.write(binarioParaInt(bit_8).to_bytes(1, 'little'))
-                            bit_8 = ''
-                        bit_8 += embaralhado[j-1]
-                    embaralhado = ""
-        # Quando terminar ele para o while
-        if byte == b'':
-            break
-    
-    # Fecha as variaveis com os arquivos abertos.
-    arquivoEntrada.close()
+            embaralhado = embaralhador(embaralhado)                     # EMBARALHA OS BITS
+
+            tmp = ''
+            for bit in embaralhado:                                     # ESCREVE TODOS OS BITS
+                tmp += bit
+                if (len(tmp) == 8):
+                    arquivoSaida.write(binarioParaInt(tmp).to_bytes(1, 'little'))
+                    tmp = ''
+
     arquivoSaida.close()
+    arquivoEntrada.close() 
 
 def alternativaB():
     arquivoEntrada = open('arquivo.bin', 'rb')
@@ -302,9 +280,9 @@ def alternativaB():
     pos = 0
     qtdErro = 0
     qtdCorrigido = 0
+    virgem = True
     while True:
         byte = arquivoEntrada.read(1)                           # LE UM BYTE
-
         if (byte == b''):                                       # SE ACABAR SAI
             break
 
@@ -392,10 +370,12 @@ def alternativaB():
                 bloco[8] = ''
                 saida = saida + ''.join(bloco)
             
-            if (pos == 1):                                      # CASO TENHAMOS COLOCADO 0 A ESQUERDA,
+            
+            if (pos == 1) and virgem:                           # CASO TENHAMOS COLOCADO 0 A ESQUERDA,
                 saida = saida[saida.index('1'):]                # ELE REMOVE E COLOCA O SUFICIENTE PARA
                 if (len(saida) % 8 != 0):                       # QUE SEJAM MULTIPLOS DE 8
                     saida.zfill(8 - (len(saida) % 8))
+                    virgem = False
             
             escrita = []                                        # DIVIDIMOS EM BLOCOS DE 8 BITS
             for bit in saida:                                   # TRANSFORMAMOS EM BYTES
