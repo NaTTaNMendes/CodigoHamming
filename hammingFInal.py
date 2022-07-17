@@ -10,7 +10,10 @@ Autores:
 @Vitor Gabriel Gonçalves Coelho
 """
 
+from importlib.resources import path
 import time
+
+from pathlib import Path
 
 def criarQ1(binario): 
     """Cria o segundo bit de paridade
@@ -235,6 +238,10 @@ def alternativaA():
         
     bits = []
     embaralhado = ""
+    qtdBytes = Path('imagem.jpg').stat().st_size
+    if ((qtdBytes * 8) % 176 != 0):
+        zeros = ['0'] * (176 - (qtdBytes * 8) % 176)
+        bits.extend(zeros)
     while True:
         # Lê 2 bytes por vez
         bytes = arquivoEntrada.read(1)
@@ -243,10 +250,10 @@ def alternativaA():
             for j in bin(i)[2:].zfill(8):
                 bits.append(j)
 
-        if (len(bits) >= 176 or (len(bits) <= 175 and bytes == b'')):
-            if len(bits) <= 175 and bytes == b'':  
-                for i in range(0, (176-len(bits))):
-                    bits.insert(0, '0')
+       #if (len(bits) >= 176 or (len(bits) <= 175 and bytes == b'')):
+       #    if len(bits) <= 175 and bytes == b'':
+       #        for i in range(0, (176-len(bits))):
+       #            bits.insert(0, '0')
                     
             blocos = []
             entrada = ''
@@ -277,24 +284,13 @@ def alternativaA():
             for i in blocoComHamming:
                 embaralhado += ''.join(i)
 
-                '''while True:
-                    if (len(embaralhado) == 0):
-                        break
-                    saida = embaralhado[0:9]
-                    embaralhado = embaralhado[9:]
-                    saida = binarioParaInt(saida)
-                    saida = saida.to_bytes(1, 'little')
-                    arquivoSaida.write(saida)
-
-    if (len(bits) > 0):
-        bits = ''.join(bits)
-        bits = bits.zfill(176)'''
                 if len(embaralhado) >= 256:
                     embaralhado = embaralhador(embaralhado)
                     bit_8 = ''
                     for j in range(1, 257):
                         if j%8 == 0:
                             arquivoSaida.write(binarioParaInt(bit_8).to_bytes(1, 'little'))
+                            print(binarioParaInt(bit_8).to_bytes(1, 'little'))
                             bit_8 = ''
                         bit_8 += embaralhado[j-1]
                     embaralhado = ""
@@ -305,7 +301,141 @@ def alternativaA():
     arquivoSaida.close()
 
 def alternativaB():
-    pass
+    while True:
+        # Este while pede o arquivo que será decodificado.
+        # Caso o arquivo seja inexistente será exibida uma mensagem de erro.
+        try:
+            '''caminho = input('Informe o caminho do arquivo: ')'''      
+            # Lê o arquivo em binário                             
+            arquivoEntrada = open('arquivo.bin', 'rb')
+            break
+        except:
+            mensagemErro('Arquivo não encontrado')
+        
+    while True:
+        # Este while pede o caminho onde será salvo o arquivo.
+        # Caso o arquivo seja inexistente, será exibido uma mensagem de erro.
+        try:
+            '''caminho = input('Informe o caminho onde deseja guardar os binários: ')'''
+            arquivoSaida = open('imagem2.jpg', 'wb')
+            break
+        except:
+            mensagemErro('Arquivo não encontrado')
+    
+    qtdErro = 0
+    qtdCorrigido = 0
+    bits = []
+    while True:
+        # Lê 2 bytes por vez
+        bytes = arquivoEntrada.read(1)
+
+        for i in bytes:
+            for j in bin(i)[2:].zfill(8):
+                bits.append(j)
+            
+            embaralhado = ''.join(bits)
+            desembaralhado = ''
+            if (len(bits) == 256):
+                desembaralhado = embaralhador(embaralhado)
+                    
+            blocos = []
+            entrada = ''            
+            for index, i in enumerate(desembaralhado):
+                entrada += i
+                if (len(entrada) == 16):
+                    blocos.append(entrada)
+                    desembaralhado = desembaralhado[index:]
+                    entrada = ''
+                
+            for bloco in blocos:
+                #Verifica todos os bits do arquivo
+                decodificados = []
+                podeRetornar = True
+                for index, bloco in enumerate(blocos):                                                 
+                    posUm = []
+                    qtdUm = 0
+
+                    #Coleta a posição dos números '1' no bloco de bits
+                    for posicao, numero in enumerate(bloco):                                                 
+                        if (numero == '1'):
+                            posUm.append(posicao)
+                        if (numero == '1' and posicao > 0):
+                            qtdUm += 1
+                    
+                    # Verifica a paridade geral do bloco
+                    checkQ0 = True
+                    if (qtdUm % 2 == 0):
+                        if (bloco[0] == '1'):
+                            checkQ0 = False
+                    else:
+                        if (bloco[0] == '0'):
+                            checkQ0 = False
+
+                    xor = 0
+                    if (len(posUm) != 0):
+                        for item in posUm:
+                            # Realiza o xor dos bits ligados
+                            xor = xor^item
+                        # Esse if é responsável por corrigir o erro (caso haja) no binário
+                        # do arquivo .txt
+                        if (xor != 0) and (checkQ0 == False):
+                            a = ""
+                            for i in range(0, len(bloco)):
+                                if i == xor:
+                                    if bloco[i] == "1":
+                                        a += "0"
+                                    else:
+                                        a += "1"
+                                else:
+                                    a += bloco[i]
+                            bloco = a
+                            qtdErro += 1
+                            qtdCorrigido += 1
+
+                        # Verifica se ocorreu mais de dois erros
+                        elif (xor != 0) and (checkQ0 == True):
+                            qtdErro += 2
+                            podeRetornar = False 
+
+                        # Verifica se houve um erro no bit 0                   
+                        elif not((xor == 0) and checkQ0):
+                            if (bloco[0] == '0'):
+                                bloco = bloco[1:]
+                                bloco = '1' + bloco
+                            else:
+                                bloco = bloco[1:]
+                                bloco = '0' + bloco
+                            qtdErro += 1
+                            qtdCorrigido += 1
+
+                    # Adiciona os blocos corrigidos em uma lista
+                    decodificados.append(bloco)
+
+                saida = ''
+                if (podeRetornar):
+                    for bloco in decodificados:
+                        bloco = list(bloco)
+                        bloco[0] = ''
+                        bloco[1] = ''
+                        bloco[2] = ''
+                        bloco[4] = ''
+                        bloco[8] = ''
+                        saida = saida + ''.join(bloco)
+                
+                saida = saida[saida.index('1'):]
+                if (saida % 8 != 0):
+                    saida.zfill(8 - (saida % 8))
+                
+                escrita = []
+                for i in range(0, 10):
+                    pass
+                    
+
+        if bytes == b'':
+        # Quando terminar ele para o while
+            break
+    arquivoEntrada.close()
+    arquivoSaida.close()
 
 def main():
     """Função principal do programa
@@ -341,6 +471,9 @@ def main():
         # Essa alternativa pega o primeiro arquivo que o usuario digitar
         # e escreve em binario no segundo arquivo que o usuario digitar.
         alternativaA()
+
+    if (choice == 'B'):
+        alternativaB()
         
 
 if __name__=='__main__':
