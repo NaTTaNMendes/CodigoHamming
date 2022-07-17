@@ -209,6 +209,103 @@ def binarioParaInt(lista):
         pot = pot >> 1
     return word
     
+def alternativaA():
+    while True:
+        # Este while pede o arquivo que será convertido para binario.
+        # Caso o usuario digite um arquivo inexistente, será exibido 
+        # a mensagem de erro.
+        try:
+            '''caminho = input('Informe o caminho do arquivo: ')'''      
+            # Lê o arquivo em binário                             
+            arquivoEntrada = open('imagem.jpg', 'rb')
+            break
+        except:
+            mensagemErro('Arquivo não encontrado')
+        
+    while True:
+        # Este while pede o arquivo que será convertido para binario.
+        # Caso o usuario digite um arquivo inexistente, será exibido 
+        # a mensagem de erro.
+        try:
+            '''caminho = input('Informe o caminho onde deseja guardar os binários: ')'''
+            arquivoSaida = open('arquivo.bin', 'wb')
+            break
+        except:
+            mensagemErro('Arquivo não encontrado')
+        
+    bits = []
+    embaralhado = ""
+    while True:
+        # Lê 2 bytes por vez
+        bytes = arquivoEntrada.read(1)
+
+        for i in bytes:
+            for j in bin(i)[2:].zfill(8):
+                bits.append(j)
+
+        if (len(bits) >= 176 or (len(bits) <= 175 and bytes == b'')):
+            if len(bits) <= 175 and bytes == b'':  
+                for i in range(0, (176-len(bits))):
+                    bits.insert(0, '0')
+                    
+            blocos = []
+            entrada = ''
+            # Quando eu adiciono os 0, nesse momento ele corta os 0
+            for index, i in enumerate(bits):
+                entrada += i
+                if (len(entrada) == 11):
+                    blocos.append(entrada)
+                    bits = bits[index:]
+                    entrada = ''
+                
+            blocoComHamming = []
+            for i in blocos:
+                mascara = "xxx" + i[0] + "x" + i[1:4] + "x" + i[4:11]
+                blocoComHamming.append(mascara) 
+            
+            # Este for coloca os bits de paridade no lugar certo do codigo (onde estavam os 'x')
+            for index, saida in enumerate(blocoComHamming):
+                lista = list(saida)
+                lista[1] = str(criarQ1(saida))
+                lista[2] = str(criarQ2(saida))
+                lista[4] = str(criarQ3(saida))
+                lista[8] = str(criarQ4(saida))
+                lista[0] = str(criarQ0("".join(lista)))
+                saida = "".join(lista)
+                blocoComHamming[index] = saida
+            
+            for i in blocoComHamming:
+                embaralhado += ''.join(i)
+
+                '''while True:
+                    if (len(embaralhado) == 0):
+                        break
+                    saida = embaralhado[0:9]
+                    embaralhado = embaralhado[9:]
+                    saida = binarioParaInt(saida)
+                    saida = saida.to_bytes(1, 'little')
+                    arquivoSaida.write(saida)
+
+    if (len(bits) > 0):
+        bits = ''.join(bits)
+        bits = bits.zfill(176)'''
+                if len(embaralhado) >= 256:
+                    embaralhado = embaralhador(embaralhado)
+                    bit_8 = ''
+                    for j in range(1, 257):
+                        if j%8 == 0:
+                            arquivoSaida.write(binarioParaInt(bit_8).to_bytes(1, 'little'))
+                            bit_8 = ''
+                        bit_8 += embaralhado[j-1]
+                    embaralhado = ""
+        if bytes == b'':
+        # Quando terminar ele para o while
+            break
+    arquivoEntrada.close()
+    arquivoSaida.close()
+
+def alternativaB():
+    pass
 
 def main():
     """Função principal do programa
@@ -243,101 +340,8 @@ def main():
         # Caso o usuario escolha a alternativa 'A', ele vem para este 'if'
         # Essa alternativa pega o primeiro arquivo que o usuario digitar
         # e escreve em binario no segundo arquivo que o usuario digitar.
+        alternativaA()
         
-        while True:
-            # Este while pede o arquivo que será convertido para binario.
-            # Caso o usuario digite um arquivo inexistente, será exibido 
-            # a mensagem de erro.
-            try:
-                '''caminho = input('Informe o caminho do arquivo: ')'''      
-                # Lê o arquivo em binário                             
-                arquivoEntrada = open('teste.py', 'rb')
-                break
-            except:
-                mensagemErro('Arquivo não encontrado')
-        
-        while True:
-            # Este while pede o arquivo que será convertido para binario.
-            # Caso o usuario digite um arquivo inexistente, será exibido 
-            # a mensagem de erro.
-            try:
-                '''caminho = input('Informe o caminho onde deseja guardar os binários: ')'''
-                arquivoSaida = open('arquivo.bin', 'wb')
-                break
-            except:
-                mensagemErro('Arquivo não encontrado')
-        
-        bits = []
-        embaralhado = ""
-        while True:
-            # Lê 2 bytes por vez
-            bytes = arquivoEntrada.read(1)
-
-
-            for i in bytes:
-                for j in bin(i)[2:].zfill(8):
-                    bits.append(j)
-            
-            if (len(bits) >= 176 or (len(bits) <= 175 and bytes == b'')):
-                if len(bits) <= 175:
-                    for i in range(0, (176-len(bits))):
-                        bits.insert(0, '0')
-
-                blocos = []
-                entrada = ''
-                for index, i in enumerate(bits):
-                    entrada += i
-                    if (len(entrada) == 11):
-                        blocos.append(entrada)
-                        bits = bits[index:]
-                
-                blocoComHamming = []
-                for i in blocos:
-                    mascara = "xxx" + i[0] + "x" + i[1:4] + "x" + i[4:11]
-                    blocoComHamming.append(mascara) 
-            
-                # Este for coloca os bits de paridade no lugar certo do codigo (onde estavam os 'x')
-                for index, saida in enumerate(blocoComHamming):
-                    lista = list(saida)
-                    lista[1] = str(criarQ1(saida))
-                    lista[2] = str(criarQ2(saida))
-                    lista[4] = str(criarQ3(saida))
-                    lista[8] = str(criarQ4(saida))
-                    lista[0] = str(criarQ0("".join(lista)))
-                    saida = "".join(lista)
-                    blocoComHamming[index] = saida
-                
-                for i in blocoComHamming:
-                    embaralhado += ''.join(i)
-
-                    '''while True:
-                        if (len(embaralhado) == 0):
-                            break
-                        saida = embaralhado[0:9]
-                        embaralhado = embaralhado[9:]
-                        saida = binarioParaInt(saida)
-                        saida = saida.to_bytes(1, 'little')
-                        arquivoSaida.write(saida)
-
-        if (len(bits) > 0):
-            bits = ''.join(bits)
-            bits = bits.zfill(176)'''
-                    if len(embaralhado) >= 256:
-                        embaralhado = embaralhador(embaralhado)
-                        bit_8 = ''
-                        for j in range(1, 257):
-                            if j%8 == 0:
-                                arquivoSaida.write(binarioParaInt(bit_8).to_bytes(1, 'little'))
-                                bit_8 = ''
-                            bit_8 += embaralhado[j-1]
-                        embaralhado = ""
-            if bytes == b'':
-            # Quando terminar ele para o while
-                break
-        arquivoEntrada.close()
-        arquivoSaida.close()
-        print(bits)
-        print(len(bits))
 
 if __name__=='__main__':
     main()
