@@ -12,4 +12,7 @@ else:
     print('diferente')'''
 
 os.remove('arquivo.bin')
+os.remove('imagem2.png')
 open('arquivo.bin', 'w')
+
+
