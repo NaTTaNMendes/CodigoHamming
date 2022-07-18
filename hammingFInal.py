@@ -212,15 +212,21 @@ def binarioParaInt(lista):
     return word
     
 def alternativaA():
-    arquivoEntrada = open('video.mkv', 'rb')
+    arquivoEntrada = open('Teste.mp4', 'rb')
     arquivoSaida = open('arquivo.bin', 'wb')
     bits = []
 
-    totalBytes = Path('video.mkv').stat().st_size                       # Coleta o total de bytes do arquivo
+    totalBytes = Path('Teste.mp4').stat().st_size                       # Coleta o total de bytes do arquivo
     resto = (totalBytes * 8) % 176                                      # e coloca os 0 a esquerda necessários
     if (resto != 0):
-        for i in range(176-resto):
+        bits.append('1')
+        for i in range(175-resto):
             bits.append('0')
+        bits = list(reversed(bits))
+    else:
+        for i in range(175):
+            bits.append('0')
+        bits.append('1')
     while True:
         byte = arquivoEntrada.read(1)
 
@@ -274,7 +280,7 @@ def alternativaA():
 
 def alternativaB():
     arquivoEntrada = open('arquivo.bin', 'rb')
-    arquivoSaida = open('video2.mkv', 'wb')
+    arquivoSaida = open('videoMP4.mp4', 'wb')
 
     bits = []
     pos = 0
@@ -370,9 +376,8 @@ def alternativaB():
                 bloco[8] = ''
                 saida = saida + ''.join(bloco)
             
-            
             if (pos == 1) and virgem:                           # CASO TENHAMOS COLOCADO 0 A ESQUERDA,
-                saida = saida[saida.index('1'):]                # ELE REMOVE E COLOCA O SUFICIENTE PARA
+                saida = saida[saida.index('1') + 1:]            # ELE REMOVE E COLOCA O SUFICIENTE PARA
                 if (len(saida) % 8 != 0):                       # QUE SEJAM MULTIPLOS DE 8
                     saida.zfill(8 - (len(saida) % 8))
                     virgem = False
