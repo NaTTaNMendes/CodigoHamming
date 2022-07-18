@@ -212,14 +212,14 @@ def binarioParaInt(lista):
     return word
     
 def alternativaA():
-    arquivoEntrada = open('imagem.png', 'rb')
+    arquivoEntrada = open('video.mkv', 'rb')
     arquivoSaida = open('arquivo.bin', 'wb')
     bits = []
 
-    totalBytes = Path('imagem.png').stat().st_size                      # Coleta o total de bytes do arquivo
+    totalBytes = Path('video.mkv').stat().st_size                       # Coleta o total de bytes do arquivo
     resto = (totalBytes * 8) % 176                                      # e coloca os 0 a esquerda necessários
     if (resto != 0):
-        for i in range(0, 176-resto):
+        for i in range(176-resto):
             bits.append('0')
     while True:
         byte = arquivoEntrada.read(1)
@@ -231,15 +231,15 @@ def alternativaA():
             for j in bin(i)[2:].zfill(8):
                 bits.append(j)
         
-        if (len(bits) == 176):                                          # DIVIDE EM BLOCOS DE 11 BITS
-            blocos = []                                                                 
+        if (len(bits) >= 176):                                          # DIVIDE EM BLOCOS DE 11 BITS
+            blocos = []
             tmp = ''
-            for i in bits:
-                tmp += i
+            for i in range(0, 176):
+                tmp += bits[i]
                 if (len(tmp) == 11):
                     blocos.append(tmp)
                     tmp = ''
-            bits = []
+            bits = bits[176:]
 
             blocoHamming = []                                           # MASCARA DE HAMMING APLICADA EM CADA
             for bloco in blocos:                                        # BLOCO
@@ -274,7 +274,7 @@ def alternativaA():
 
 def alternativaB():
     arquivoEntrada = open('arquivo.bin', 'rb')
-    arquivoSaida = open('imagem2.png', 'wb')
+    arquivoSaida = open('video2.mkv', 'wb')
 
     bits = []
     pos = 0
@@ -290,7 +290,7 @@ def alternativaB():
             for j in bin(i)[2:].zfill(8):
                 bits.append(j)
 
-        if (len(bits) == 256):                                  # COLETA UM GRUPO E DESEMBARALHA
+        if (len(bits) >= 256):                                  # COLETA UM GRUPO E DESEMBARALHA
             desembaralhado = "".join(bits)
             desembaralhado = embaralhador(desembaralhado)
             bits = []
@@ -385,7 +385,9 @@ def alternativaB():
                     escrita = []
 
     arquivoEntrada.close()
-    arquivoSaida.close()     
+    arquivoSaida.close()
+    print('Quantidade de erros:', qtdErro)
+    print('Erros corrigidos:', qtdCorrigido)  
     
 def main():
     """Função principal do programa
