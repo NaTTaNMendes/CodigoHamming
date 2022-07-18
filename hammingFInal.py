@@ -210,13 +210,13 @@ def binarioParaInt(lista):
         # reduza a potência pela divisão por dois usando bit a bit
         pot = pot >> 1
     return word
-    
+        
 def alternativaA():
-    arquivoEntrada = open('Teste.mp4', 'rb')
+    arquivoEntrada = open('video.mkv', 'rb')
     arquivoSaida = open('arquivo.bin', 'wb')
     bits = []
 
-    totalBytes = Path('Teste.mp4').stat().st_size                       # Coleta o total de bytes do arquivo
+    totalBytes = Path('video.mkv').stat().st_size                       # Coleta o total de bytes do arquivo
     resto = (totalBytes * 8) % 176                                      # e coloca os 0 a esquerda necessários
     if (resto != 0):
         bits.append('1')
@@ -259,6 +259,10 @@ def alternativaA():
                 lista[4] = str(criarQ3(saida))
                 lista[8] = str(criarQ4(saida))
                 lista[0] = str(criarQ0("".join(lista)))
+                if (lista[3] == '1'):                                  # CASO O USUÁRIO DESEJE APLICAR ERROS EM CADA BLOCO
+                    lista[3] = '0'
+                else:
+                    lista[3] = '1'
                 saida = "".join(lista)
                 blocoHamming[index] = saida
             
@@ -280,7 +284,7 @@ def alternativaA():
 
 def alternativaB():
     arquivoEntrada = open('arquivo.bin', 'rb')
-    arquivoSaida = open('videoMP4.mp4', 'wb')
+    arquivoSaida = open('video2.mkv', 'wb')
 
     bits = []
     pos = 0
