@@ -11,8 +11,57 @@ Autores:
 """
 
 import time
-
 from pathlib import Path
+
+def codCelio(caminho, arquivoSaida):
+    sufixo = Path(caminho).suffix
+    prefixo = Path(caminho).stem
+    for i in prefixo:
+        for j in bin(ord(i))[2:].zfill(8):
+            bits.append(j)
+    for i in sufixo:
+        for j in bin(ord(i))[2:].zfill(8):
+            bits.append(j)
+    for i in range(0, 176-len(bits)):
+        bits.append('0')
+    blocos = []
+    tmp = ''
+    for i in range(0, 176):
+        tmp += bits[i]
+        if (len(tmp) == 11):
+            blocos.append(tmp)
+            tmp = ''
+    bits = bits[176:]
+
+    blocoHamming = []                                           # MASCARA DE HAMMING APLICADA EM CADA
+    for bloco in blocos:                                        # BLOCO
+        mascara = "xxx" + bloco[0] + "x" + bloco[1:4] + "x" + bloco[4:11]
+        blocoHamming.append(mascara)
+
+    for index, saida in enumerate(blocoHamming):                # APLICA HAMMING NOS BLOCOS
+        lista = list(saida)
+        lista[1] = str(criarQ1(saida))
+        lista[2] = str(criarQ2(saida))
+        lista[4] = str(criarQ3(saida))
+        lista[8] = str(criarQ4(saida))
+        lista[0] = str(criarQ0("".join(lista)))
+        if (lista[3] == '1'):                                  # CASO O USUÁRIO DESEJE APLICAR ERROS EM CADA BLOCO
+            lista[3] = '0'
+        else:
+            lista[3] = '1'
+        saida = "".join(lista)
+        blocoHamming[index] = saida
+    embaralhado = ''                                            # ADICIONA TODOS OS BLOCOS EM UMA STRING
+    for bloco in blocoHamming:                                  # UNICA
+        embaralhado += ''.join(bloco)
+    embaralhado = embaralhador(embaralhado)                     # EMBARALHA OS BITS
+
+    tmp = ''
+    for bit in embaralhado:                                     # ESCREVE TODOS OS BITS
+        tmp += bit
+        if (len(tmp) == 8):
+            arquivoSaida.write(binarioParaInt(tmp).to_bytes(1, 'little'))
+            tmp = ''
 
 def criarQ1(binario): 
     """Cria o segundo bit de paridade
@@ -196,7 +245,6 @@ def mensagemErro(mensagem):
     print('\n'*130)
 
 def binarioParaInt(lista):
-
     # inicialize potência com o 2**8 utilizando operações bit a bit
     pot = (1<<7)
     # criar uma acumulador chamado palavra, afinal um grupo de bytes é uma
@@ -210,13 +258,39 @@ def binarioParaInt(lista):
         # reduza a potência pela divisão por dois usando bit a bit
         pot = pot >> 1
     return word
-        
-def alternativaA():
-    arquivoEntrada = open('video.mkv', 'rb')
-    arquivoSaida = open('arquivo.bin', 'wb')
-    bits = []
 
-    totalBytes = Path('video.mkv').stat().st_size                       # Coleta o total de bytes do arquivo
+def escrever(arquivoSaida, saida):
+    escrita = []                                        # DIVIDIMOS EM BLOCOS DE 8 BITS
+    for bit in saida:                                   # TRANSFORMAMOS EM BYTES
+        escrita.append(bit)                             # E GRAVAMOS NO ARQUIVO            
+        if (len(escrita) == 8):
+            arquivoSaida.write(binarioParaInt(escrita).to_bytes(1, 'little'))
+            escrita = []
+
+def alternativaA():
+    caminho = 'teste.mp4'
+    arquivoEntrada = open(caminho, 'rb')
+    arquivoSaida = open('arquivo.bin', 'wb')
+    totalBytes = Path(caminho).stat().st_size
+    bits = []
+    bitsTemp = []
+
+    st = caminho
+    binary_converted = ''.join(format(c, 'b').zfill(8) for c in bytearray(st, "utf-8"))
+    binary_converted = binary_converted.zfill(176)
+
+    for bit in binary_converted:
+        bitsTemp.append(bit)
+
+    binary_converted = ''
+    st = str(totalBytes)
+    binary_converted = ''.join(format(c, 'b').zfill(8) for c in bytearray(st, "utf-8"))
+    binary_converted = binary_converted.zfill(176)
+
+    for bit in binary_converted:
+        bitsTemp.append(bit)
+    
+                                                                        # Coleta o total de bytes do arquivo
     resto = (totalBytes * 8) % 176                                      # e coloca os 0 a esquerda necessários
     if (resto != 0):
         bits.append('1')
@@ -227,6 +301,8 @@ def alternativaA():
         for i in range(175):
             bits.append('0')
         bits.append('1')
+    bitsTemp.extend(bits)
+    bits = bitsTemp
     while True:
         byte = arquivoEntrada.read(1)
 
@@ -284,13 +360,17 @@ def alternativaA():
 
 def alternativaB():
     arquivoEntrada = open('arquivo.bin', 'rb')
-    arquivoSaida = open('video2.mkv', 'wb')
-
+    arquivoSaida = ""
+    totalEsperado = 0
+    totalColetado = 0
+    caminho = ''
+    
     bits = []
     pos = 0
     qtdErro = 0
     qtdCorrigido = 0
-    virgem = True
+    variavelM = True
+    pokemon = True
     while True:
         byte = arquivoEntrada.read(1)                           # LE UM BYTE
         if (byte == b''):                                       # SE ACABAR SAI
@@ -355,7 +435,7 @@ def alternativaB():
                     elif (xor != 0) and (checkQ0 == True):      # VERIFICA SE TEM MAIS DE DOIS ERROS
                         qtdErro += 2
                         print('Quantidade de erros:', qtdErro)
-                        print('NÃO FOI POSSÍVEL CORRIGIR OS ERROS')
+                        print('NÃO FOI POSSÍVEL CORRIGIR OS ERROS: 2 OU MAIS BITS CORROMPIDOS EM UM BLOCO OU FORAM ADICIONADOS/REMOVIDOS BYTES')
                         exit()
                   
                     elif not((xor == 0) and checkQ0):           # VERIFICA SE O BIT 0 ESTÁ ERRADO
@@ -380,23 +460,55 @@ def alternativaB():
                 bloco[8] = ''
                 saida = saida + ''.join(bloco)
             
-            if (pos == 1) and virgem:                           # CASO TENHAMOS COLOCADO 0 A ESQUERDA,
+            if (pos == 1) and (pokemon):
+                saida = saida[saida.index('1'):]
+                if (len(saida) % 8 != 0):
+                    for i in range(8 - (len(saida) % 8)):
+                        saida = '0' + saida
+                print(saida)
+
+                for i in range(0, len(saida), 8):   
+                    temp_data = saida[i:i + 8] 
+                    decimal_data = binarioParaInt(temp_data)
+                    caminho = caminho + chr(decimal_data)
+                print(caminho)
+                 
+                arquivoSaida = open('c' + caminho, 'wb')
+                pokemon = False
+            
+            if (pos == 2):
+                saida = saida[saida.index('1'):]
+                if (len(saida) % 8 != 0):
+                    for i in range(8 - (len(saida) % 8)):
+                        saida = '0' + saida
+
+                str_data =''
+                for i in range(0, len(saida), 8):   
+                    temp_data = saida[i:i + 8] 
+                    decimal_data = binarioParaInt(temp_data)
+                    str_data = str_data + chr(decimal_data)
+
+                totalEsperado = int(str_data)
+
+            if (pos == 3) and variavelM:                        # CASO TENHAMOS COLOCADO 0 A ESQUERDA,
                 saida = saida[saida.index('1') + 1:]            # ELE REMOVE E COLOCA O SUFICIENTE PARA
                 if (len(saida) % 8 != 0):                       # QUE SEJAM MULTIPLOS DE 8
                     saida.zfill(8 - (len(saida) % 8))
-                    virgem = False
+                    variavelM = False
             
-            escrita = []                                        # DIVIDIMOS EM BLOCOS DE 8 BITS
-            for bit in saida:                                   # TRANSFORMAMOS EM BYTES
-                escrita.append(bit)                             # E GRAVAMOS NO ARQUIVO            
-                if (len(escrita) == 8):
-                    arquivoSaida.write(binarioParaInt(escrita).to_bytes(1, 'little'))
-                    escrita = []
+            escrever(arquivoSaida, saida)
+            
+    totalColetado = Path(caminho).stat().st_size
+
+    if (totalColetado > totalEsperado):
+        print('Arquivo decodifcado, porém foram adicionados bytes')
+    elif (totalColetado < totalEsperado):
+        print('Arquivo decodifcado, porém foram removidos bytes')
 
     arquivoEntrada.close()
     arquivoSaida.close()
     print('Quantidade de erros:', qtdErro)
-    print('Erros corrigidos:', qtdCorrigido)  
+    print('Erros corrigidos:', qtdCorrigido)
     
 def main():
     """Função principal do programa
