@@ -231,7 +231,7 @@ def criarCabecalho(string):
     return bitsTemp
 
 def alternativaA():
-    caminho = 'teste.jpg'
+    caminho = 'teste.mp3'
     arquivoEntrada = open(caminho, 'rb')
     arquivoSaida = open('arquivo.bin', 'wb')
     totalBytes = Path(caminho).stat().st_size
@@ -296,7 +296,6 @@ def alternativaA():
             embaralhado = ''                                            # ADICIONA TODOS OS BLOCOS EM UMA STRING
             for bloco in blocoHamming:                                  # UNICA
                 embaralhado += ''.join(bloco)
-
             embaralhado = embaralhador(embaralhado)                     # EMBARALHA OS BITS
 
             tmp = ''
@@ -429,7 +428,7 @@ def alternativaB():
 
             if (pos == 2):
                 totalEsperado = leCabecalho(saida)
-                totalEsperado = int(totalColetado)
+                totalEsperado = int(totalEsperado)
                 saida = ''
 
             if (pos == 3):
@@ -437,18 +436,18 @@ def alternativaB():
 
             if (saida != ''):                      
                 escrever(arquivoSaida, saida)
-            
-    totalColetado = Path('c' + caminho).stat().st_size
-
-    if (totalColetado > totalEsperado):
-        print('Arquivo decodifcado, porém foram removidos bytes')
-    elif (totalColetado < totalEsperado):
-        print('Arquivo decodifcado, porém foram adicionados bytes')
 
     arquivoEntrada.close()
     arquivoSaida.close()
     print('Quantidade de erros:', qtdErro)
     print('Erros corrigidos:', qtdCorrigido)
+
+    totalColetado = Path('c' + caminho).stat().st_size
+
+    if (totalColetado > totalEsperado):
+        print('Arquivo decodifcado, porém foram adicionados bytes')
+    elif (totalColetado < totalEsperado):
+        print('Arquivo decodifcado, porém foram removidos bytes')
     
 def main():
     """Função principal do programa
