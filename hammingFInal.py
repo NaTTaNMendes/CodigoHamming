@@ -13,56 +13,6 @@ Autores:
 import time
 from pathlib import Path
 
-def codCelio(caminho, arquivoSaida):
-    sufixo = Path(caminho).suffix
-    prefixo = Path(caminho).stem
-    for i in prefixo:
-        for j in bin(ord(i))[2:].zfill(8):
-            bits.append(j)
-    for i in sufixo:
-        for j in bin(ord(i))[2:].zfill(8):
-            bits.append(j)
-    for i in range(0, 176-len(bits)):
-        bits.append('0')
-    blocos = []
-    tmp = ''
-    for i in range(0, 176):
-        tmp += bits[i]
-        if (len(tmp) == 11):
-            blocos.append(tmp)
-            tmp = ''
-    bits = bits[176:]
-
-    blocoHamming = []                                           # MASCARA DE HAMMING APLICADA EM CADA
-    for bloco in blocos:                                        # BLOCO
-        mascara = "xxx" + bloco[0] + "x" + bloco[1:4] + "x" + bloco[4:11]
-        blocoHamming.append(mascara)
-
-    for index, saida in enumerate(blocoHamming):                # APLICA HAMMING NOS BLOCOS
-        lista = list(saida)
-        lista[1] = str(criarQ1(saida))
-        lista[2] = str(criarQ2(saida))
-        lista[4] = str(criarQ3(saida))
-        lista[8] = str(criarQ4(saida))
-        lista[0] = str(criarQ0("".join(lista)))
-        if (lista[3] == '1'):                                  # CASO O USUÁRIO DESEJE APLICAR ERROS EM CADA BLOCO
-            lista[3] = '0'
-        else:
-            lista[3] = '1'
-        saida = "".join(lista)
-        blocoHamming[index] = saida
-    embaralhado = ''                                            # ADICIONA TODOS OS BLOCOS EM UMA STRING
-    for bloco in blocoHamming:                                  # UNICA
-        embaralhado += ''.join(bloco)
-    embaralhado = embaralhador(embaralhado)                     # EMBARALHA OS BITS
-
-    tmp = ''
-    for bit in embaralhado:                                     # ESCREVE TODOS OS BITS
-        tmp += bit
-        if (len(tmp) == 8):
-            arquivoSaida.write(binarioParaInt(tmp).to_bytes(1, 'little'))
-            tmp = ''
-
 def criarQ1(binario): 
     """Cria o segundo bit de paridade
 
@@ -267,42 +217,43 @@ def escrever(arquivoSaida, saida):
             arquivoSaida.write(binarioParaInt(escrita).to_bytes(1, 'little'))
             escrita = []
 
+def criarCabecalho(string):
+    bitsTemp = []
+
+    st = string
+    binary_converted = ''.join(format(c, 'b').zfill(8) for c in bytearray(st, "utf-8"))
+    binary_converted = '1' + binary_converted
+    binary_converted = binary_converted.zfill(176)
+
+    for bit in binary_converted:
+        bitsTemp.append(bit)
+
+    return bitsTemp
+
 def alternativaA():
     caminho = 'teste.jpg'
     arquivoEntrada = open(caminho, 'rb')
     arquivoSaida = open('arquivo.bin', 'wb')
     totalBytes = Path(caminho).stat().st_size
     bits = []
-   #bitsTemp = []
+    
+    cabecalho = criarCabecalho(caminho)                                 # CRIA OS CABECALHOS
+    cabecalho.extend(criarCabecalho(str(totalBytes)))
 
-   #st = caminho
-   #binary_converted = ''.join(format(c, 'b').zfill(8) for c in bytearray(st, "utf-8"))
-   #binary_converted = binary_converted.zfill(176)
-
-   #for bit in binary_converted:
-   #    bitsTemp.append(bit)
-
-   #binary_converted = ''
-   #st = str(totalBytes)
-   #binary_converted = ''.join(format(c, 'b').zfill(8) for c in bytearray(st, "utf-8"))
-   #binary_converted = binary_converted.zfill(176)
-
-   #for bit in binary_converted:
-   #    bitsTemp.append(bit)
-   #
-   #                                                                    # Coleta o total de bytes do arquivo
+                                                                        # Coleta o total de bytes do arquivo
     resto = (totalBytes * 8) % 176                                      # e coloca os 0 a esquerda necessários
-    if (resto != 0):
-        bits.append('1')
+    if (resto != 0):       
         for i in range(175-resto):
             bits.append('0')
-        bits = list(reversed(bits))
+        bits.append('1')
     else:
         for i in range(175):
             bits.append('0')
         bits.append('1')
-   #bitsTemp.extend(bits)
-   #bits = bitsTemp
+
+    cabecalho.extend(bits)                                              # ADICIONA O CABECALHO NOS BITS
+    bits = cabecalho
+
     while True:
         byte = arquivoEntrada.read(1)
 
@@ -358,19 +309,29 @@ def alternativaA():
     arquivoSaida.close()
     arquivoEntrada.close() 
 
+def leCabecalho(binario):
+    binario = binario[binario.index('1') + 1:]
+    saida = ''
+
+    for i in range(0, len(binario), 8):
+        temp_data = binario[i:i + 8]
+        decimal_data = binarioParaInt(temp_data)
+        saida = saida + chr(decimal_data)
+    
+    return saida
+
 def alternativaB():
     arquivoEntrada = open('arquivo.bin', 'rb')
-    arquivoSaida = open('csaida.jpg', 'wb')
-   #totalEsperado = 0
-   #totalColetado = 0
-   #caminho = ''
+    arquivoSaida = None                                         # ARQUIVO QUE SERÁ USADO PARA FAZER O OPEN DE SAIDA
+    totalEsperado = 0                                           # QUANTIDADE DE BITS CALCULADO COM O BIN  
+    totalColetado = 0                                           # QUANTIDADE DE BITS INFORMADO NO CABECALHO
     
-    bits = []
-    pos = 0
-    qtdErro = 0
-    qtdCorrigido = 0
-    variavelM = True
-   #pokemon = True
+    bits = []                                                   # BITS QUE SERÃO VERIFICADOS    
+    pos = 0                                                     # QUAL BLOCO ESTÁ SENDO VERIFICADO
+    qtdErro = 0                                                 # QUANTOS ERROS FORAM ENCONTRADOS        
+    qtdCorrigido = 0                                            # QUANTOS ERROS FORAM CORRIGIDOS
+    abrirSaida = True                                           # VERIFICACAO SE A SAIDA JA FOI ABERTA
+    caminho = ''                                                # NOME DO ARQUIVO 
     while True:
         byte = arquivoEntrada.read(1)                           # LE UM BYTE
         if (byte == b''):                                       # SE ACABAR SAI
@@ -459,57 +420,30 @@ def alternativaB():
                 bloco[4] = ''
                 bloco[8] = ''
                 saida = saida + ''.join(bloco)
+
+            if (pos == 1) and (abrirSaida):
+                caminho = leCabecalho(saida)
+                arquivoSaida = open('c' + caminho, 'wb')
+                abrirSaida = False
+                saida = ''
+
+            if (pos == 2):
+                totalEsperado = leCabecalho(saida)
+                totalEsperado = int(totalColetado)
+                saida = ''
+
+            if (pos == 3):
+                saida = saida[saida.index('1') + 1:]
+
+            if (saida != ''):                      
+                escrever(arquivoSaida, saida)
             
-           #if (pos == 1) and (pokemon):
-           #    saida = saida[saida.index('1'):]
-           #    if (len(saida) % 8 != 0):
-           #        for i in range(8 - (len(saida) % 8)):
-           #            saida = '0' + saida
-           #    print(saida)
+    totalColetado = Path('c' + caminho).stat().st_size
 
-           #    for i in range(0, len(saida), 8):   
-           #        temp_data = saida[i:i + 8] 
-           #        decimal_data = binarioParaInt(temp_data)
-           #        caminho = caminho + chr(decimal_data)
-           #    print(caminho)
-           #     
-           #    arquivoSaida = open('c' + caminho, 'wb')
-           #    pokemon = False
-           #
-           #if (pos == 2):
-           #    saida = saida[saida.index('1'):]
-           #    if (len(saida) % 8 != 0):
-           #        for i in range(8 - (len(saida) % 8)):
-           #            saida = '0' + saida
-
-           #    str_data =''
-           #    for i in range(0, len(saida), 8):   
-           #        temp_data = saida[i:i + 8] 
-           #        decimal_data = binarioParaInt(temp_data)
-           #        str_data = str_data + chr(decimal_data)
-
-           #    totalEsperado = int(str_data)
-
-           #if (pos == 3) and variavelM:                        # CASO TENHAMOS COLOCADO 0 A ESQUERDA,
-           #    saida = saida[saida.index('1') + 1:]            # ELE REMOVE E COLOCA O SUFICIENTE PARA
-           #    if (len(saida) % 8 != 0):                       # QUE SEJAM MULTIPLOS DE 8
-           #        saida.zfill(8 - (len(saida) % 8))
-           #        variavelM = False
-
-            if (pos == 1) and variavelM:                        # CASO TENHAMOS COLOCADO 0 A ESQUERDA,
-                saida = saida[saida.index('1') + 1:]            # ELE REMOVE E COLOCA O SUFICIENTE PARA
-                if (len(saida) % 8 != 0):                       # QUE SEJAM MULTIPLOS DE 8
-                    saida.zfill(8 - (len(saida) % 8))
-                    variavelM = False
-            
-            escrever(arquivoSaida, saida)
-            
-    #totalColetado = Path(caminho).stat().st_size
-
-   #if (totalColetado > totalEsperado):
-   #    print('Arquivo decodifcado, porém foram adicionados bytes')
-   #elif (totalColetado < totalEsperado):
-   #    print('Arquivo decodifcado, porém foram removidos bytes')
+    if (totalColetado > totalEsperado):
+        print('Arquivo decodifcado, porém foram removidos bytes')
+    elif (totalColetado < totalEsperado):
+        print('Arquivo decodifcado, porém foram adicionados bytes')
 
     arquivoEntrada.close()
     arquivoSaida.close()

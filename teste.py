@@ -29,7 +29,7 @@ def binarioParaInt(lista):
         # reduza a potência pela divisão por dois usando bit a bit
         pot = pot >> 1
     return word
-
+'''
 caminho = 'video.mkv'
 
 st = caminho
@@ -42,5 +42,31 @@ for i in range(0, len(binary_converted), 8):
     str_data = str_data + chr(decimal_data)
 
 print(str_data)
-print(binary_converted)
+print(binary_converted)'''
+
+def criarCabecalho(string):
+    bitsTemp = []
+
+    st = string
+    binary_converted = ''.join(format(c, 'b').zfill(8) for c in bytearray(st, "utf-8"))
+    binary_converted = '1' + binary_converted
+    binary_converted = binary_converted.zfill(176)
+
+    for bit in binary_converted:
+        bitsTemp.append(bit)
+
+    return bitsTemp
+
+def leCabecalho(binario):
+    binario = binario[binario.index('1') + 1:]
+    saida = ''
+
+    for i in range(0, len(binario), 8):
+        temp_data = binario[i:i + 8]
+        decimal_data = binarioParaInt(temp_data)
+        saida = saida + chr(decimal_data)
+    
+    return saida
+
+print(leCabecalho(criarCabecalho('mp42')))
 
