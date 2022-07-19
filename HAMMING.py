@@ -177,24 +177,15 @@ def embaralhador(bits):
             saida = saida + bits[(a * 16) + i]
     return saida
 
-def mensagemErro(mensagem):
-    """ Mensagem de erro personalizada
-
-    Uma mensagem simples de erro que é acionada quando o usuário insere alguma
-    alternativa ou argumento cujo o código não suporta/aceita.
+def binarioParaInt(lista):
+    """Pega um binario e o transforma em inteiro.
 
     Args:
-        mensagem (String): A mensagem de erro.
+        lista (list): Lista de numeros.
 
     Returns:
-        None
+        word (integer): Valor referente ao binário.
     """
-    # Imprime a mensagem contendo o erro.
-    print(mensagem)
-    time.sleep(0.5)
-    print('\n'*130)
-
-def binarioParaInt(lista):
     # inicialize potência com o 2**8 utilizando operações bit a bit
     pot = (1<<7)
     # criar uma acumulador chamado palavra, afinal um grupo de bytes é uma
@@ -210,38 +201,74 @@ def binarioParaInt(lista):
     return word
 
 def escrever(arquivoSaida, saida):
-    escrita = []                                        # DIVIDIMOS EM BLOCOS DE 8 BITS
-    for bit in saida:                                   # TRANSFORMAMOS EM BYTES
-        escrita.append(bit)                             # E GRAVAMOS NO ARQUIVO            
+    """Escreve um binario no arquivo.
+
+    Args:
+        arquivoSaida (file): O arquivo que será escrito.
+        saida (str): o binário que será escrito.
+    Returns:
+        None.
+    """
+    
+    escrita = []
+    for bit in saida:
+        # É dividido em blocos de 8 bits
+        escrita.append(bit)            
         if (len(escrita) == 8):
+            # Logo em seguida é escrito dentro do arquivo.
             arquivoSaida.write(binarioParaInt(escrita).to_bytes(1, 'little'))
             escrita = []
 
 def criarCabecalho(string):
-    bitsTemp = []
+    """Cria o cabeçalho do arquivo binario
 
+    Essa função cria o arquivo.bin, coloca coloca o arquivo selecionado
+    em binário e o codifica em hamming
+
+    Args:
+        string (string): possui o nome, extensão, etc do arquivo.
+
+    Returns:
+        bitsTempo (list): os bits do cabeçalho.
+    """
+    
+    bitsTemp = []
     st = string
     binary_converted = ''.join(format(c, 'b').zfill(8) for c in bytearray(st, "utf-8"))
     binary_converted = '1' + binary_converted
+    # Caso não preencha os 256 bits, adiciona 0 à esquerda
     binary_converted = binary_converted.zfill(176)
 
+    # Coloca os bits em uma lista
     for bit in binary_converted:
         bitsTemp.append(bit)
 
     return bitsTemp
 
 def alternativaA():
-    caminho = 'teste.mp3'
+    """É a parte que codifica o arquivo e passa para arquivo binario
+
+    Args:
+        None.
+    
+    Returns:
+        None.
+    """
+    # Pega o arquivo que será codificado e também passa o arquivo que conterá
+    # o binário codificado.
+    caminho = 'teste.mkv'
     arquivoEntrada = open(caminho, 'rb')
     arquivoSaida = open('arquivo.bin', 'wb')
     totalBytes = Path(caminho).stat().st_size
     bits = []
     
-    cabecalho = criarCabecalho(caminho)                                 # CRIA OS CABECALHOS
+    # Cria o cabeçalho do arquivo.
+    cabecalho = criarCabecalho(caminho)
     cabecalho.extend(criarCabecalho(str(totalBytes)))
 
-                                                                        # Coleta o total de bytes do arquivo
-    resto = (totalBytes * 8) % 176                                      # e coloca os 0 a esquerda necessários
+    # Verifica quandos bits tem no arquivo, caso nao seja divisivel por 176
+    # fica adicionando 0 à esquerda até que o arquivo seja divisivel.
+    resto = (totalBytes * 8) % 176
     if (resto != 0):       
         for i in range(175-resto):
             bits.append('0')
@@ -251,20 +278,25 @@ def alternativaA():
             bits.append('0')
         bits.append('1')
 
-    cabecalho.extend(bits)                                              # ADICIONA O CABECALHO NOS BITS
+    # Coloca o cabeçalho nos bits
+    cabecalho.extend(bits)
     bits = cabecalho
 
+    # Lê cada byte do arquivo
     while True:
         byte = arquivoEntrada.read(1)
 
+        # Para o laço quando acabar os bytes
         if (byte == b''):
             break
 
-        for i in byte:                                                  # TRANSFORMA EM BIT
+        for i in byte:
+            # Transforma cada byte em bits com 0 a esquerda caso necessário
             for j in bin(i)[2:].zfill(8):
                 bits.append(j)
         
-        if (len(bits) >= 176):                                          # DIVIDE EM BLOCOS DE 11 BITS
+        # separa em blocos de 11 bits
+        if (len(bits) >= 176):
             blocos = []
             tmp = ''
             for i in range(0, 176):
@@ -274,44 +306,59 @@ def alternativaA():
                     tmp = ''
             bits = bits[176:]
 
-            blocoHamming = []                                           # MASCARA DE HAMMING APLICADA EM CADA
-            for bloco in blocos:                                        # BLOCO
+            # Cria uma mascara nos blocos de 11 bits, colocando x onde vai os
+            # bits de paridade do hamming
+            blocoHamming = []
+            for bloco in blocos:
                 mascara = "xxx" + bloco[0] + "x" + bloco[1:4] + "x" + bloco[4:11]
                 blocoHamming.append(mascara)
 
-            for index, saida in enumerate(blocoHamming):                # APLICA HAMMING NOS BLOCOS
+            # Coloca o hamming em cada um dos x colocados anteriormente
+            for index, saida in enumerate(blocoHamming):
                 lista = list(saida)
                 lista[1] = str(criarQ1(saida))
                 lista[2] = str(criarQ2(saida))
                 lista[4] = str(criarQ3(saida))
                 lista[8] = str(criarQ4(saida))
                 lista[0] = str(criarQ0("".join(lista)))
-               #if (lista[3] == '1'):                                  # CASO O USUÁRIO DESEJE APLICAR ERROS EM CADA BLOCO
+               #if (lista[3] == '1'):
                #    lista[3] = '0'
                #else:
                #    lista[3] = '1'
                 saida = "".join(lista)
                 blocoHamming[index] = saida
             
-            embaralhado = ''                                            # ADICIONA TODOS OS BLOCOS EM UMA STRING
-            for bloco in blocoHamming:                                  # UNICA
+            # Coloca todos os bits em uma string e manda para o embaralhador
+            embaralhado = ''
+            for bloco in blocoHamming:
                 embaralhado += ''.join(bloco)
-            embaralhado = embaralhador(embaralhado)                     # EMBARALHA OS BITS
+            embaralhado = embaralhador(embaralhado)
 
             tmp = ''
-            for bit in embaralhado:                                     # ESCREVE TODOS OS BITS
+            # Escreve todos os bits dentro do arquivo
+            for bit in embaralhado:
                 tmp += bit
                 if (len(tmp) == 8):
                     arquivoSaida.write(binarioParaInt(tmp).to_bytes(1, 'little'))
                     tmp = ''
 
+    # Fecha ps arqiovos
     arquivoSaida.close()
     arquivoEntrada.close() 
 
 def leCabecalho(binario):
+    """Le o cabeçalho para o transformar no nome do arquivo
+
+    Args:
+        binario (str): A string que está o cabeçalho
+
+    Returns:
+        saida (str): O nome do arquivo com a extensão.
+    """
     binario = binario[binario.index('1') + 1:]
     saida = ''
 
+    # Pega de byte em byte para conseguir ler o cabeçalho
     for i in range(0, len(binario), 8):
         temp_data = binario[i:i + 8]
         decimal_data = binarioParaInt(temp_data)
@@ -320,33 +367,50 @@ def leCabecalho(binario):
     return saida
 
 def alternativaB():
-    arquivoEntrada = open('arquivo.bin', 'rb')
-    arquivoSaida = None                                         # ARQUIVO QUE SERÁ USADO PARA FAZER O OPEN DE SAIDA
-    totalEsperado = 0                                           # QUANTIDADE DE BITS CALCULADO COM O BIN  
-    totalColetado = 0                                           # QUANTIDADE DE BITS INFORMADO NO CABECALHO
-    
-    bits = []                                                   # BITS QUE SERÃO VERIFICADOS    
-    pos = 0                                                     # QUAL BLOCO ESTÁ SENDO VERIFICADO
-    qtdErro = 0                                                 # QUANTOS ERROS FORAM ENCONTRADOS        
-    qtdCorrigido = 0                                            # QUANTOS ERROS FORAM CORRIGIDOS
-    abrirSaida = True                                           # VERIFICACAO SE A SAIDA JA FOI ABERTA
-    caminho = ''                                                # NOME DO ARQUIVO 
-    while True:
-        byte = arquivoEntrada.read(1)                           # LE UM BYTE
-        if (byte == b''):                                       # SE ACABAR SAI
-            break
+    """É a parte que decodifica o arquivo binario e cria o arquivo original
 
-        for i in byte:                                          # TRANSFORMA EM BIT
+    Args:
+        None.
+    
+    Returns:
+        None.
+    """
+    # Arquivos que serão abertos
+    arquivoEntrada = open('corrompido.bin', 'rb')
+    arquivoSaida = None
+    # Quantidade de bits do arquivo
+    totalEsperado = 0
+    # Quantidade de bits no cabeçalho
+    totalColetado = 0
+    
+    bits = []
+    pos = 0
+    qtdErro = 0  
+    qtdCorrigido = 0
+    abrirSaida = True
+    caminho = ''
+
+    # Pega byte por byte do arquivo
+    while True:
+        byte = arquivoEntrada.read(1)
+        # Caso acabe os bytes do arquivo, ele para.
+        if (byte == b''):
+            break
+        
+        # transforma em bytes
+        for i in byte:
             for j in bin(i)[2:].zfill(8):
                 bits.append(j)
 
-        if (len(bits) >= 256):                                  # COLETA UM GRUPO E DESEMBARALHA
+        # Desembaralha os bits
+        if (len(bits) >= 256):
             desembaralhado = "".join(bits)
             desembaralhado = embaralhador(desembaralhado)
             bits = []
             pos += 1
 
-            blocos = []                                         # DIVIDE O GRUPO EM BLOCOS
+            # Divide em blocos
+            blocos = []
             temp = ''
             for i in desembaralhado:
                 temp += i
@@ -355,17 +419,20 @@ def alternativaB():
                     temp = ''
 
             decodificados = []
-            for bloco in blocos:                                # VERIFICA CADA BLOCO        
+            # Verifica cada bloco do arquivo
+            for bloco in blocos:   
                 posUm = []
                 qtdUm = 0
 
-                for posicao, numero in enumerate(bloco):        # COLETA A QTD DE 1 E AS POSICOES DELES                                              
+                # Ve quantos 1 que tem no byte
+                for posicao, numero in enumerate(bloco):
                     if (numero == '1'):
                         posUm.append(posicao)
                     if (numero == '1' and posicao > 0):
                         qtdUm += 1
                 
-                checkQ0 = True                                  # VERIFICA O BIT DE PARIDADE 0
+                # Verifica o bit de paridade 0
+                checkQ0 = True
                 if (qtdUm % 2 == 0):
                     if (bloco[0] == '1'):
                         checkQ0 = False
@@ -373,12 +440,14 @@ def alternativaB():
                     if (bloco[0] == '0'):
                         checkQ0 = False
                 
-                xor = 0                                         # FAZ O XOR DE TODAS AS POSIÇÕES COM 1
+                xor = 0
+                # Faz o xor nos bytes
                 if (len(posUm) != 0):
                     for item in posUm:
                         xor = xor^item                          
                     
-                    if (xor != 0) and (checkQ0 == False):       # VERIFICA E CORRIGE UM ERRO COMUM
+                    # Verifica e corrige apenas um erro por bloco
+                    if (xor != 0) and (checkQ0 == False):
                         a = ""
                         for i in range(0, len(bloco)):
                             if i == xor:
@@ -392,13 +461,15 @@ def alternativaB():
                         qtdErro += 1
                         qtdCorrigido += 1
 
-                    elif (xor != 0) and (checkQ0 == True):      # VERIFICA SE TEM MAIS DE DOIS ERROS
+                    # Verifica se o bloco possui mais de dois erros
+                    elif (xor != 0) and (checkQ0 == True):
                         qtdErro += 2
                         print('Quantidade de erros:', qtdErro)
                         print('NÃO FOI POSSÍVEL CORRIGIR OS ERROS: 2 OU MAIS BITS CORROMPIDOS EM UM BLOCO OU FORAM ADICIONADOS/REMOVIDOS BYTES')
                         exit()
-                  
-                    elif not((xor == 0) and checkQ0):           # VERIFICA SE O BIT 0 ESTÁ ERRADO
+
+                    # Verifica se o bit 0 está de acordo com os outros bits e a corrige
+                    elif not((xor == 0) and checkQ0):
                         if (bloco[0] == '0'):
                             bloco = bloco[1:]
                             bloco = '1' + bloco
@@ -408,10 +479,11 @@ def alternativaB():
                         qtdErro += 1
                         qtdCorrigido += 1
                 
-                decodificados.append(bloco)                     # GUARDA O BINÁRIO DECODIFICADO
+                decodificados.append(bloco)
 
             saida = ''
-            for bloco in decodificados:                         # REMOVE OS BITS DE PARIDADE
+            # Tira os bits de paridade
+            for bloco in decodificados:
                 bloco = list(bloco)
                 bloco[0] = ''
                 bloco[1] = ''
@@ -420,12 +492,14 @@ def alternativaB():
                 bloco[8] = ''
                 saida = saida + ''.join(bloco)
 
+            # pega o primeiro cabeçalho para colocar o nome no arquivo
             if (pos == 1) and (abrirSaida):
                 caminho = leCabecalho(saida)
                 arquivoSaida = open('c' + caminho, 'wb')
                 abrirSaida = False
                 saida = ''
 
+            # Pega o segundo cabeçalho para verificar o tamanho do arquivo
             if (pos == 2):
                 totalEsperado = leCabecalho(saida)
                 totalEsperado = int(totalEsperado)
@@ -434,9 +508,11 @@ def alternativaB():
             if (pos == 3):
                 saida = saida[saida.index('1') + 1:]
 
+            # Escreve no arquivo novo.
             if (saida != ''):                      
                 escrever(arquivoSaida, saida)
 
+    # Fecha os arquivos e imprime quantos erros foram achados
     arquivoEntrada.close()
     arquivoSaida.close()
     print('Quantidade de erros:', qtdErro)
@@ -444,6 +520,7 @@ def alternativaB():
 
     totalColetado = Path('c' + caminho).stat().st_size
 
+    # Caso tenha sido adicionado ou removido bits
     if (totalColetado > totalEsperado):
         print('Arquivo decodifcado, porém foram adicionados bytes')
     elif (totalColetado < totalEsperado):
@@ -477,7 +554,9 @@ def main():
         if (choice in alternatives):
             break
         else:
-            mensagemErro('Opção inválida')
+            print("Opção invalida")
+            time.sleep(0.5)
+            print('\n'*130)
     
         # Caso o usuario escolha a alternativa 'A', ele vai para o primeiro
         # if, caso ele escolha a alternativa 'B', ele vai para o segundo.
