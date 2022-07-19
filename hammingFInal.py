@@ -268,29 +268,29 @@ def escrever(arquivoSaida, saida):
             escrita = []
 
 def alternativaA():
-    caminho = 'teste.mp4'
+    caminho = 'teste.jpg'
     arquivoEntrada = open(caminho, 'rb')
     arquivoSaida = open('arquivo.bin', 'wb')
     totalBytes = Path(caminho).stat().st_size
     bits = []
-    bitsTemp = []
+   #bitsTemp = []
 
-    st = caminho
-    binary_converted = ''.join(format(c, 'b').zfill(8) for c in bytearray(st, "utf-8"))
-    binary_converted = binary_converted.zfill(176)
+   #st = caminho
+   #binary_converted = ''.join(format(c, 'b').zfill(8) for c in bytearray(st, "utf-8"))
+   #binary_converted = binary_converted.zfill(176)
 
-    for bit in binary_converted:
-        bitsTemp.append(bit)
+   #for bit in binary_converted:
+   #    bitsTemp.append(bit)
 
-    binary_converted = ''
-    st = str(totalBytes)
-    binary_converted = ''.join(format(c, 'b').zfill(8) for c in bytearray(st, "utf-8"))
-    binary_converted = binary_converted.zfill(176)
+   #binary_converted = ''
+   #st = str(totalBytes)
+   #binary_converted = ''.join(format(c, 'b').zfill(8) for c in bytearray(st, "utf-8"))
+   #binary_converted = binary_converted.zfill(176)
 
-    for bit in binary_converted:
-        bitsTemp.append(bit)
-    
-                                                                        # Coleta o total de bytes do arquivo
+   #for bit in binary_converted:
+   #    bitsTemp.append(bit)
+   #
+   #                                                                    # Coleta o total de bytes do arquivo
     resto = (totalBytes * 8) % 176                                      # e coloca os 0 a esquerda necessários
     if (resto != 0):
         bits.append('1')
@@ -301,8 +301,8 @@ def alternativaA():
         for i in range(175):
             bits.append('0')
         bits.append('1')
-    bitsTemp.extend(bits)
-    bits = bitsTemp
+   #bitsTemp.extend(bits)
+   #bits = bitsTemp
     while True:
         byte = arquivoEntrada.read(1)
 
@@ -335,10 +335,10 @@ def alternativaA():
                 lista[4] = str(criarQ3(saida))
                 lista[8] = str(criarQ4(saida))
                 lista[0] = str(criarQ0("".join(lista)))
-                if (lista[3] == '1'):                                  # CASO O USUÁRIO DESEJE APLICAR ERROS EM CADA BLOCO
-                    lista[3] = '0'
-                else:
-                    lista[3] = '1'
+               #if (lista[3] == '1'):                                  # CASO O USUÁRIO DESEJE APLICAR ERROS EM CADA BLOCO
+               #    lista[3] = '0'
+               #else:
+               #    lista[3] = '1'
                 saida = "".join(lista)
                 blocoHamming[index] = saida
             
@@ -360,17 +360,17 @@ def alternativaA():
 
 def alternativaB():
     arquivoEntrada = open('arquivo.bin', 'rb')
-    arquivoSaida = ""
-    totalEsperado = 0
-    totalColetado = 0
-    caminho = ''
+    arquivoSaida = open('csaida.jpg', 'wb')
+   #totalEsperado = 0
+   #totalColetado = 0
+   #caminho = ''
     
     bits = []
     pos = 0
     qtdErro = 0
     qtdCorrigido = 0
     variavelM = True
-    pokemon = True
+   #pokemon = True
     while True:
         byte = arquivoEntrada.read(1)                           # LE UM BYTE
         if (byte == b''):                                       # SE ACABAR SAI
@@ -460,37 +460,43 @@ def alternativaB():
                 bloco[8] = ''
                 saida = saida + ''.join(bloco)
             
-            if (pos == 1) and (pokemon):
-                saida = saida[saida.index('1'):]
-                if (len(saida) % 8 != 0):
-                    for i in range(8 - (len(saida) % 8)):
-                        saida = '0' + saida
-                print(saida)
+           #if (pos == 1) and (pokemon):
+           #    saida = saida[saida.index('1'):]
+           #    if (len(saida) % 8 != 0):
+           #        for i in range(8 - (len(saida) % 8)):
+           #            saida = '0' + saida
+           #    print(saida)
 
-                for i in range(0, len(saida), 8):   
-                    temp_data = saida[i:i + 8] 
-                    decimal_data = binarioParaInt(temp_data)
-                    caminho = caminho + chr(decimal_data)
-                print(caminho)
-                 
-                arquivoSaida = open('c' + caminho, 'wb')
-                pokemon = False
-            
-            if (pos == 2):
-                saida = saida[saida.index('1'):]
-                if (len(saida) % 8 != 0):
-                    for i in range(8 - (len(saida) % 8)):
-                        saida = '0' + saida
+           #    for i in range(0, len(saida), 8):   
+           #        temp_data = saida[i:i + 8] 
+           #        decimal_data = binarioParaInt(temp_data)
+           #        caminho = caminho + chr(decimal_data)
+           #    print(caminho)
+           #     
+           #    arquivoSaida = open('c' + caminho, 'wb')
+           #    pokemon = False
+           #
+           #if (pos == 2):
+           #    saida = saida[saida.index('1'):]
+           #    if (len(saida) % 8 != 0):
+           #        for i in range(8 - (len(saida) % 8)):
+           #            saida = '0' + saida
 
-                str_data =''
-                for i in range(0, len(saida), 8):   
-                    temp_data = saida[i:i + 8] 
-                    decimal_data = binarioParaInt(temp_data)
-                    str_data = str_data + chr(decimal_data)
+           #    str_data =''
+           #    for i in range(0, len(saida), 8):   
+           #        temp_data = saida[i:i + 8] 
+           #        decimal_data = binarioParaInt(temp_data)
+           #        str_data = str_data + chr(decimal_data)
 
-                totalEsperado = int(str_data)
+           #    totalEsperado = int(str_data)
 
-            if (pos == 3) and variavelM:                        # CASO TENHAMOS COLOCADO 0 A ESQUERDA,
+           #if (pos == 3) and variavelM:                        # CASO TENHAMOS COLOCADO 0 A ESQUERDA,
+           #    saida = saida[saida.index('1') + 1:]            # ELE REMOVE E COLOCA O SUFICIENTE PARA
+           #    if (len(saida) % 8 != 0):                       # QUE SEJAM MULTIPLOS DE 8
+           #        saida.zfill(8 - (len(saida) % 8))
+           #        variavelM = False
+
+            if (pos == 1) and variavelM:                        # CASO TENHAMOS COLOCADO 0 A ESQUERDA,
                 saida = saida[saida.index('1') + 1:]            # ELE REMOVE E COLOCA O SUFICIENTE PARA
                 if (len(saida) % 8 != 0):                       # QUE SEJAM MULTIPLOS DE 8
                     saida.zfill(8 - (len(saida) % 8))
@@ -498,12 +504,12 @@ def alternativaB():
             
             escrever(arquivoSaida, saida)
             
-    totalColetado = Path(caminho).stat().st_size
+    #totalColetado = Path(caminho).stat().st_size
 
-    if (totalColetado > totalEsperado):
-        print('Arquivo decodifcado, porém foram adicionados bytes')
-    elif (totalColetado < totalEsperado):
-        print('Arquivo decodifcado, porém foram removidos bytes')
+   #if (totalColetado > totalEsperado):
+   #    print('Arquivo decodifcado, porém foram adicionados bytes')
+   #elif (totalColetado < totalEsperado):
+   #    print('Arquivo decodifcado, porém foram removidos bytes')
 
     arquivoEntrada.close()
     arquivoSaida.close()
