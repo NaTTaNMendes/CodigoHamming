@@ -234,13 +234,13 @@ def criarCabecalho(string):
     
     bitsTemp = []
     st = string
-    binary_converted = ''.join(format(c, 'b').zfill(8) for c in bytearray(st, "utf-8"))
-    binary_converted = '1' + binary_converted
+    binarioConvertido = ''.join(format(c, 'b').zfill(8) for c in bytearray(st, "utf-8"))
+    binarioConvertido = '1' + binarioConvertido
     # Caso não preencha os 256 bits, adiciona 0 à esquerda
-    binary_converted = binary_converted.zfill(176)
+    binarioConvertido = binarioConvertido.zfill(176)
 
     # Coloca os bits em uma lista
-    for bit in binary_converted:
+    for bit in binarioConvertido:
         bitsTemp.append(bit)
 
     return bitsTemp
@@ -256,7 +256,7 @@ def alternativaA():
     """
     # Pega o arquivo que será codificado e também passa o arquivo que conterá
     # o binário codificado.
-    caminho = 'teste.mkv'
+    caminho = 'teste.mp4'
     arquivoEntrada = open(caminho, 'rb')
     arquivoSaida = open('arquivo.bin', 'wb')
     totalBytes = Path(caminho).stat().st_size
@@ -321,10 +321,10 @@ def alternativaA():
                 lista[4] = str(criarQ3(saida))
                 lista[8] = str(criarQ4(saida))
                 lista[0] = str(criarQ0("".join(lista)))
-               #if (lista[3] == '1'):
-               #    lista[3] = '0'
-               #else:
-               #    lista[3] = '1'
+                if (lista[3] == '1'):
+                    lista[3] = '0'
+                else:
+                    lista[3] = '1'
                 saida = "".join(lista)
                 blocoHamming[index] = saida
             
@@ -360,9 +360,9 @@ def leCabecalho(binario):
 
     # Pega de byte em byte para conseguir ler o cabeçalho
     for i in range(0, len(binario), 8):
-        temp_data = binario[i:i + 8]
-        decimal_data = binarioParaInt(temp_data)
-        saida = saida + chr(decimal_data)
+        temp = binario[i:i + 8]
+        decimal = binarioParaInt(temp)
+        saida = saida + chr(decimal)
     
     return saida
 
@@ -376,7 +376,7 @@ def alternativaB():
         None.
     """
     # Arquivos que serão abertos
-    arquivoEntrada = open('corrompido.bin', 'rb')
+    arquivoEntrada = open('arquivo.bin', 'rb')
     arquivoSaida = None
     # Quantidade de bits do arquivo
     totalEsperado = 0
@@ -389,7 +389,7 @@ def alternativaB():
     qtdCorrigido = 0
     abrirSaida = True
     caminho = ''
-
+    
     # Pega byte por byte do arquivo
     while True:
         byte = arquivoEntrada.read(1)
