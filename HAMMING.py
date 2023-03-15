@@ -321,10 +321,10 @@ def alternativaA():
                 lista[4] = str(criarQ3(saida))
                 lista[8] = str(criarQ4(saida))
                 lista[0] = str(criarQ0("".join(lista)))
-                if (lista[3] == '1'):
-                    lista[3] = '0'
-                else:
-                    lista[3] = '1'
+                #if (lista[3] == '1'):
+                #    lista[3] = '0'
+                #else:
+                #    lista[3] = '1'
                 saida = "".join(lista)
                 blocoHamming[index] = saida
             
